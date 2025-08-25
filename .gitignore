@@ -1,0 +1,40 @@
+# # Virtual environment
+# -------------------------------
+venv/
+.env
+.venv/
+
+# -------------------------------
+# Python cache e compilados
+# -------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# -------------------------------
+# Logs e arquivos temporários
+# -------------------------------
+*.log
+*.sqlite3
+*.db
+*.DS_Store
+
+# -------------------------------
+# Dados sensíveis ou pesados
+# -------------------------------
+dados/ITBI.csv
+dados/*.csv
+*.xlsx
+*.xls
+
+# -------------------------------
+# Configurações de IDE
+# -------------------------------
+.vscode/
+.idea/
+
+# -------------------------------
+# Streamlit / arquivos temporários
+# -------------------------------
+.streamlit/
