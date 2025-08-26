@@ -128,6 +128,7 @@ def criacao_navegacao_e_filtros():
         df_filtrado = filtros_aplicados(df_filtrado, 'Bairro')
         df_filtrado = filtros_aplicados(df_filtrado, 'Tipo_Imovel')
         df_filtrado = filtros_aplicados(df_filtrado, 'Tipo_Ocupacao')
+        df_filtrado = filtros_aplicados(df_filtrado, 'Tipo_Construcao')
 
     # DataFrame para gráfico de linha
     df_filtrado_linha = df.copy()

@@ -34,9 +34,9 @@ def graficos(df_filtrado, df_filtrado_linha):
     fig7 = grafico_box_plot(df_filtrado)
     fig8 = grafico_correlacao_area_valor(df_filtrado)
     fig9 = grafico_mediana(df_filtrado)
-    fig10 = grafico_colunas(df_filtrado_linha, 'Região', 'Valor_Avaliacao', 'Mediana do valor de transmissão por região', 6)
-    fig11 = grafico_colunas(df_filtrado_linha, 'Bairro', 'Valor_Avaliacao', 'Mediana do valor de transmissão por Bairro', 10)
-    
+    fig10 = grafico_colunas(df_filtrado_linha, 'Região', 'Valor_Avaliacao', 'Mediana do valor de transmissão por região', None)
+    fig11 = grafico_colunas(df_filtrado_linha, 'Bairro', 'Valor_Avaliacao', 'Mediana do valor de transmissão por Bairro -Top 10', 10)
+    fig12 = grafico_barras(df_filtrado, 'Tipo_Construcao', 'Distribuição do ITBI por Tipo de Construção', None)
 
     aba1, aba2, aba3, aba4, aba5, aba6 = st.tabs(['🏫 Geral', '📊 Medidas de tendência central', '💰 Valores médios', '🔍 Pesquisa', '📉 Regressão Linear', '💵 Valor estimado'])
 
@@ -67,12 +67,13 @@ def graficos(df_filtrado, df_filtrado_linha):
             st.plotly_chart(fig1, use_container_width=True, key="grafico_barras_bairro")
 
         # Mostrando a distribuição por tipo de acabamento e tipo de construção
-        col17, col18 = st.columns([2,2], vertical_alignment='center', gap='small')
+        col17, col18, col33 = st.columns([2,2,2], vertical_alignment='center', gap='small')
         with col17:
             st.plotly_chart(fig2, use_container_width=True, key="grafico_tree_padrao_acabamento")
         with col18:
             st.plotly_chart(fig3, use_container_width=True, key="grafico_barras_tipo_imovel")
-        
+        with col33:
+            st.plotly_chart(fig12, use_container_width=True, key="grafico_barras_tipo_construcao")
         
         
         
@@ -83,44 +84,41 @@ def graficos(df_filtrado, df_filtrado_linha):
         col19,  col20 =  st.columns(2)
         with col19:
             with st.container(border=True):
-                        st.write("🏫 Mediana" )
+                        st.write("🎯 Valor mediana da avaliação" )
                         st.markdown(
                             f"<p style='font-size:24px; '>{formatar_moeda_br(mediana)}</p>",
                                 unsafe_allow_html=True
                             )
         with col20:
             with st.container(border=True):
-                        st.write("🏫 Total transmissões" )
+                        st.write("🏫 Total de transmissões" )
                         st.markdown(
                             f"<p style='font-size:24px; '>{formatar_milhar(total_transimissoes)}</p>",
                                 unsafe_allow_html=True
                             )  
         # Mostrando a distribuição por tipo de acabamento e tipo de construção
+        st.plotly_chart(fig9, use_container_width=True, key="grafico_mediana")
+
         col21, col22 = st.columns([2,2], vertical_alignment='center', gap='medium')
         with col21:
-            st.plotly_chart(fig9, use_container_width=True, key="grafico_mediana")
-        with col22:
             st.plotly_chart(fig10, use_container_width=True, key="grafico_colunas_regiao")
-        col23, col24 = st.columns([2,2], vertical_alignment='center', gap='small')
-        with col23:
+        with col22:
             st.plotly_chart(fig11, use_container_width=True, key="grafico_colunas_bairro")
-        with col24:
-            st.dataframe(df_filtrado)
-
+        
 
     # Utilizando a aba2 para mostras as medidas de tendência central e grafico valor médio(média e mediana) e desvio padrão
     with aba2:
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3 = st.columns(3)
         with col1:
             with st.container(border=True):
-                    st.write("📈 Média" )
+                    st.write("📈 Valor médio da avaliação" )
                     st.markdown(
                         f"<p style='font-size:24px; '>{formatar_moeda_br(media)}</p>",
                             unsafe_allow_html=True
                         )
         with col2:
             with st.container(border=True):
-                    st.write("🎯 Mediana" )
+                    st.write("🎯 Valor mediana da avaliação" )
                     st.markdown(
                         f"<p style='font-size:24px; '>{formatar_moeda_br(mediana)}</p>",
                             unsafe_allow_html=True
@@ -128,26 +126,20 @@ def graficos(df_filtrado, df_filtrado_linha):
                     
         with col3:
             with st.container(border=True):
-                    st.write("🔄 Variância amostral" )
+                    st.write("📊 Desvio padrão da avaliação" )
                     st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_moeda_br(variancia)}</p>",
+                        f"<p style='font-size:24px; '>{formatar_moeda_br(desvio)}</p>",
                             unsafe_allow_html=True
                         )
                     
-        with col4:
-            with st.container(border=True):
-                    st.write("🔄 Variancia populacional" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_moeda_br(variancia_populacional)}</p>",
-                            unsafe_allow_html=True
-                        )
+        
                     
-        col5, col6, col7, col8, col9 = st.columns(5)
+        col5, col6, col7, col8 = st.columns(4)
         with col5:
             with st.container(border=True):
-                    st.write("🏫 Amplitude" )
+                    st.write("🏫 Total de transmissões" )
                     st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_moeda_br(amplitude)}</p>",
+                        f"<p style='font-size:24px; '>{formatar_milhar(total_transimissoes)}</p>",
                             unsafe_allow_html=True
                         )
         with col6:
@@ -168,19 +160,13 @@ def graficos(df_filtrado, df_filtrado_linha):
                     
         with col8:
             with st.container(border=True):
-                    st.write("📊 Desvio padrão" )
+                    st.write("📉 Amplitude" )
                     st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_moeda_br(desvio)}</p>",
+                        f"<p style='font-size:24px; '>{formatar_moeda_br(amplitude)}</p>",
                             unsafe_allow_html=True
                         )
                     
-        with col9:
-            with st.container(border=True):
-                    st.write("🏫 total de transmissões filtradas" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_milhar(total_transimissoes)}</p>",
-                            unsafe_allow_html=True
-                        )
+        
 
         # Mostrando gráfico de linha contendo a série histórica da média, mediana e desvio padrão, mostrando que para analise de imóveis a melhor medida é a mediana           
         col10, col11 = st.columns([3,1], border=True)
