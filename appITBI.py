@@ -27,6 +27,16 @@ st.set_page_config(
 )
 
 # ----------------------------
+# Inicialização dos filtros globais
+# ----------------------------
+filtros_iniciais = ['Ano', 'Mes', 'Região', 'Bairro', 'Tipo_Imovel', 'Tipo_Ocupacao', 'Tipo_Construcao']
+for filtro in filtros_iniciais:
+    chave = f'main_filtro_{filtro}'
+    if chave not in st.session_state:
+        st.session_state[chave] = []
+
+
+# ----------------------------
 # Caminho do arquivo
 # ----------------------------
 CAMINHO_ARQUIVO_ORIGINAL = "dados/ITBI.parquet"
@@ -85,14 +95,26 @@ def titulo_pagina():
 # ----------------------------
 # Funções de filtro
 # ----------------------------
+
 def filtros_aplicados(df, nome_do_filtro):
-    opcoes_disponiveis = sorted(df[nome_do_filtro].dropna().unique())
+    chave = f'main_filtro_{nome_do_filtro}'
+    
+    # Inicializa o session_state caso ainda não exista
+    if chave not in st.session_state:
+        st.session_state[chave] = []
+
+    # Widget Multiselect
     filtro_opcao = st.multiselect(
         f'Selecione {nome_do_filtro}',
-        opcoes_disponiveis,
-        key=f'main_filtro_{nome_do_filtro}'
+        options=sorted(df[nome_do_filtro].dropna().unique()),
+        default=st.session_state[chave],
+        key=chave
     )
-    return df[df[nome_do_filtro].isin(filtro_opcao)] if filtro_opcao else df
+    
+    # Atualiza o session_state automaticamente (Streamlit faz isso ao usar key)
+    # Apenas filtra os dados com base no valor atual
+    return df[df[nome_do_filtro].isin(st.session_state[chave])] if st.session_state[chave] else df
+
 
 def filtro_mes_nome(df):
     meses_ordenados = {
@@ -100,12 +122,26 @@ def filtro_mes_nome(df):
         'Maio': 5, 'Junho': 6, 'Julho': 7, 'Agosto': 8,
         'Setembro': 9, 'Outubro': 10, 'Novembro': 11, 'Dezembro': 12
     }
+    
+    chave = 'main_filtro_mes'
+    
+    if chave not in st.session_state:
+        st.session_state[chave] = []
+
     opcoes_disponiveis = sorted(
         df['Mes'].dropna().unique(),
         key=lambda x: meses_ordenados.get(x, 99)
     )
-    filtro_opcao = st.multiselect('Selecione o Mês', opcoes_disponiveis, key='main_filtro_mes')
-    return df[df['Mes'].isin(filtro_opcao)] if filtro_opcao else df
+
+    filtro_opcao = st.multiselect(
+        'Selecione o Mês',
+        options=opcoes_disponiveis,
+        default=st.session_state[chave],
+        key=chave
+    )
+    
+    return df[df['Mes'].isin(st.session_state[chave])] if st.session_state[chave] else df
+
 
 # ----------------------------
 # Função principal de navegação e filtros

@@ -2,7 +2,9 @@ import matplotlib as pl
 import plotly.express as px
 import streamlit as st
 
-from utils.totalizadores import calculo_total_transmisao, calculo_media , calculo_mediana, calculo_variancia, calculo_variancia_populacional, calculo_desvio, calculo_maior_valor, calculo_menor_valor, calculo_amplitude, formatar_milhar, formatar_moeda_br, calculo_correlacao, calculo_maior_area, calculo_menor_area, calculo_e_exibicao_formula_reta, calculo_valor_estimado_formula_reta
+
+
+from utils.totalizadores import calculo_total_transmisao, calculo_media , calculo_mediana, calculo_variancia, calculo_variancia_populacional, calculo_desvio, calculo_maior_valor, calculo_menor_valor, calculo_amplitude, formatar_milhar, formatar_moeda_br, calcular_correlacao, calculo_maior_area, calculo_menor_area, calculo_e_exibicao_formula_reta, calculo_valor_estimado_formula_reta, formatar_equacao_reta
 from utils.graficos import grafico_total_licenciamentos_linha, grafico_barras, grafico_tree_map, grafico_rosca, grafico_media_mediana_desvio, grafico_box_plot, grafico_correlacao_area_valor, grafico_mediana, grafico_colunas, grafico_box_plot_sem_outleirs
 from utils.marcadores import divisor
 from utils.dataframe import mainDataframe
@@ -25,26 +27,30 @@ def graficos(df_filtrado, df_filtrado_linha):
 
     # Gráficos
     fig = grafico_total_licenciamentos_linha(df_filtrado_linha)
-    fig1 = grafico_barras(df_filtrado, 'Bairro', 'Distribuição do ITBI por Bairros do Recife - Top 10', 10)
-    fig2 = grafico_tree_map(df_filtrado, 'Padrao_Acabamento', 'Total de transmissões de imóveis por padrão de acabamento')
-    fig3 = grafico_barras(df_filtrado, 'Tipo_Imovel', 'Distribuição do ITBI por tipo de construção', None ) 
+    fig1 = grafico_barras(df_filtrado, 'Bairro', 'Distribuição do ITBI por Bairros do Recife - Top 10', 10, "quantitativo")
+    fig2 = grafico_tree_map(df_filtrado, 'Padrao_Acabamento', 'Total de transmissão de imóvel por padrão de acabamento')
+    fig3 = grafico_barras(df_filtrado, 'Tipo_Imovel', 'Distribuição do ITBI por tipo de imóvel', None, "quantitativo" ) 
     fig4 = grafico_rosca(df_filtrado,'Tipo_Ocupacao', 'Total de transmissões por tipo de ocupação do imóvel')
     fig5 = grafico_media_mediana_desvio(df_filtrado)
     fig6 = grafico_tree_map(df_filtrado, 'Região', 'Total de transmissões de imóveis por Região')
     fig7 = grafico_box_plot(df_filtrado)
     fig8 = grafico_correlacao_area_valor(df_filtrado)
-    fig9 = grafico_mediana(df_filtrado)
-    fig10 = grafico_colunas(df_filtrado_linha, 'Região', 'Valor_Avaliacao', 'Mediana do valor de transmissão por região', None)
-    fig11 = grafico_colunas(df_filtrado_linha, 'Bairro', 'Valor_Avaliacao', 'Mediana do valor de transmissão por Bairro -Top 10', 10)
-    fig12 = grafico_barras(df_filtrado, 'Tipo_Construcao', 'Distribuição do ITBI por Tipo de Construção', None)
+    fig9 = grafico_mediana(df_filtrado, 'Valor_Avaliacao', 'Mediana das avaliações de valor das transmissões' )
+    fig10 = grafico_colunas(df_filtrado, 'Região', 'Valor_Avaliacao', 'Mediana do valor de transmissão por região', None, "mediana", "Blue")
+    fig11 = grafico_colunas(df_filtrado, 'Bairro', 'Valor_Avaliacao', 'Mediana do valor de transmissão por Bairro -Top 10', 10, "mediana", "Blue")
+    fig13 = grafico_mediana(df_filtrado, 'Area_Construida', 'Mediana das áreas das transmissões' )
+    fig14 = grafico_colunas(df_filtrado, 'Região', 'Area_Construida', 'Mediana do valor de transmissão por região', None, "quantitativo", "gray")
+    fig15 = grafico_colunas(df_filtrado, 'Bairro', 'Area_Construida', 'Mediana do valor de transmissão por Bairro -Top 10', 10, "quantitativo", "gray")
+    fig12 = grafico_barras(df_filtrado, 'Tipo_Construcao', 'Distribuição do ITBI por tipo de construção', None, 'quantitativo')
 
-    aba1, aba2, aba3, aba4, aba5, aba6 = st.tabs(['🏫 Geral', '📊 Medidas de tendência central', '💰 Valores médios', '🔍 Pesquisa', '📉 Regressão Linear', '💵 Valor estimado'])
+
+    aba1, aba2, aba3, aba4, aba5, aba6 = st.tabs(['🏫 Geral', '📊 Medidas de tendência central', '💰 Valores médios', '🔍 Pesquisa', '📉 Regressão Linear', '💵 Valores Preditivos'])
 
 
     # Utilizando a aba1 para dashboards gerais e entendimento do dataframe
     with aba1:
         # Mostrando o total de transmissões e a distribuição por anos no gráfico de linhas
-        col1, col2, col16 = st.columns([0.8,2,2], vertical_alignment='center', gap='small')
+        col1, col2 = st.columns([1,3], vertical_alignment='center', gap='small')
         with col1:
             with st.container(border=True):
                 st.write("🏫 Total de transmissões" )
@@ -55,25 +61,31 @@ def graficos(df_filtrado, df_filtrado_linha):
         with col2:
             # Chamando o grafico de linha 
             st.plotly_chart(fig, use_container_width=True, key="grafico_linha_total_transmissoes")
-        with col16:
-            # Chamando o gráfico de rosca
-            st.plotly_chart(fig4, use_container_width=True, key="grafico_rosca_tipo_ocupacao")
+        
 
         # Mostrando a distruibuição do total de transmissões por Região e Bairros
         col14, col15 = st.columns([2,2], vertical_alignment='center', gap='small')
         with col14:
-            st.plotly_chart(fig6, use_container_width=True, key="grafico_tree_regiao")
-        with col15:
+            
             st.plotly_chart(fig1, use_container_width=True, key="grafico_barras_bairro")
+        with col15:
+            st.plotly_chart(fig6, use_container_width=True, key="grafico_tree_regiao")
 
         # Mostrando a distribuição por tipo de acabamento e tipo de construção
-        col17, col18, col33 = st.columns([2,2,2], vertical_alignment='center', gap='small')
+        col17, col18 = st.columns(2)
         with col17:
-            st.plotly_chart(fig2, use_container_width=True, key="grafico_tree_padrao_acabamento")
-        with col18:
+            
             st.plotly_chart(fig3, use_container_width=True, key="grafico_barras_tipo_imovel")
-        with col33:
+        with col18:
+            st.plotly_chart(fig2, use_container_width=True, key="grafico_tree_padrao_acabamento")
+
+        col16, col33 = st.columns(2)
+        with col16:
+            
             st.plotly_chart(fig12, use_container_width=True, key="grafico_barras_tipo_construcao")
+            
+        with col33:
+            st.plotly_chart(fig4, use_container_width=True, key="grafico_rosca_tipo_ocupacao")
         
         
         
@@ -96,7 +108,8 @@ def graficos(df_filtrado, df_filtrado_linha):
                             f"<p style='font-size:24px; '>{formatar_milhar(total_transimissoes)}</p>",
                                 unsafe_allow_html=True
                             )  
-        # Mostrando a distribuição por tipo de acabamento e tipo de construção
+        # Mostrando a média de distribuição por tipo de acabamento e tipo de construção
+        st.subheader('Analise de desempenho de valores medios dos imóveis')
         st.plotly_chart(fig9, use_container_width=True, key="grafico_mediana")
 
         col21, col22 = st.columns([2,2], vertical_alignment='center', gap='medium')
@@ -104,6 +117,16 @@ def graficos(df_filtrado, df_filtrado_linha):
             st.plotly_chart(fig10, use_container_width=True, key="grafico_colunas_regiao")
         with col22:
             st.plotly_chart(fig11, use_container_width=True, key="grafico_colunas_bairro")
+
+        # Mostrando a média de áreas distribuição por tipo de acabamento e tipo de construção
+        st.subheader('Analise das áreas contruída dos  imóveis')
+        st.plotly_chart(fig13, use_container_width=True, key="grafico_mediana_area")
+
+        col21, col22 = st.columns([2,2], vertical_alignment='center', gap='medium')
+        with col21:
+            st.plotly_chart(fig14, use_container_width=True, key="grafico_colunas_regiao_area")
+        with col22:
+            st.plotly_chart(fig15, use_container_width=True, key="grafico_colunas_bairro_area")
         
 
     # Utilizando a aba2 para mostras as medidas de tendência central e grafico valor médio(média e mediana) e desvio padrão
@@ -239,57 +262,49 @@ def graficos(df_filtrado, df_filtrado_linha):
                     st.rerun() 
             
     with aba5:
+        #placeholder_subheader = st.empty()
+        #placeholder_dataframe = st.empty()
         escolha = st.radio(
-                "Escolha o Box Plot com ou sem Outliers",
-                options=["Com Outliers", "Sem Outliers"],   # obrigatório
-                captions=["Mostra todos os dados", "Remove valores extremos"],  # opcional
-                horizontal=True  # <<< aqui
-            )
+                    "Escolha o Box Plot com ou sem Outliers",
+                    options=["Com Outliers", "Sem Outliers"],   # obrigatório
+                    captions=["Mostra todos os dados", "Remove valores extremos"],  # opcional
+                    horizontal=True  # <<< aqui
+                )
         
+        total_com_outliers = df_filtrado.shape[0]
         if escolha == "Com Outliers":
-            col25, col26, col31 = st.columns(3)
-            with col25:
-               
-                with st.container(border=True):
-                    st.write("⬇️ Menor avaliação" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_moeda_br(menor_valor)}</p>",
-                            unsafe_allow_html=True
-                        )
-                with st.container(border=True):
-                        st.write("⬆️ Maior avaliação" )
-                        st.markdown(
-                            f"<p style='font-size:24px; '>{formatar_moeda_br(maior_valor)}</p>",
-                                unsafe_allow_html=True
-                            )
-                with st.container(border=True):
-                    st.write("🏫 Total de transmissões" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_milhar(total_transimissoes)}</p>",
-                            unsafe_allow_html=True
-                        )  
-            with col26:
-                
-                with st.container(border=True):
-                    st.write("📐 Equação da Reta" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{(calculo_e_exibicao_formula_reta(df_filtrado))}</p>",
-                            unsafe_allow_html=True
-                        )
-                with st.container(border=True):
-                        st.write("⬇️ Menor Área" )
-                        st.markdown(
-                            f"<p style='font-size:24px; '>{formatar_milhar(calculo_menor_area(df_filtrado))}</p>",
-                                unsafe_allow_html=True
-                            )
-                with st.container(border=True):
-                    st.write("⬆️ Maior Área" )
-                    st.markdown(
-                        f"<p style='font⬆️-size:24px; '>{formatar_milhar(calculo_maior_area(df_filtrado))}</p>",
-                            unsafe_allow_html=True
-                        )  
-                with col31:
-                     with st.container():
+            
+            if df_filtrado.shape[0] >= 2:
+                col40, col41, col42, col43  =  st.columns(4)
+                with col40:
+                    with st.container(border=True):
+                            st.write("📐 Equação da Reta" )
+                            st.markdown(
+                                f"<p style='font-size:24px; '>{(calculo_e_exibicao_formula_reta(df_filtrado))}</p>",
+                                    unsafe_allow_html=True
+                                )
+                with col41:
+                    with st.container(border=True):
+                            st.write("🔗 Correlação" )
+                            st.markdown(
+                                f"<p style='font-size:24px; '>{(calcular_correlacao(df_filtrado))}</p>",
+                                    unsafe_allow_html=True
+                                )
+                with col42:
+                    with st.container(border=True):
+                            st.write("📏 Maior Área Construída" )
+                            st.markdown(
+                                f"<p style='font-size:24px; '>{(formatar_milhar(calculo_maior_area(df_filtrado)))}</p>",
+                                    unsafe_allow_html=True
+                                ) 
+                with col43:
+                    with st.container(border=True):
+                            st.write("📏 Menor Área Construída" )
+                            st.markdown(
+                                f"<p style='font-size:24px; '>{formatar_milhar(calculo_menor_area(df_filtrado))}</p>",
+                                    unsafe_allow_html=True
+                                )  
+                with st.container():
                         st.markdown(
                             "<h3 style='color:black'>Informe a área construída do imóvel para estimativa de valor (m²)</h3>",
                             unsafe_allow_html=True
@@ -299,39 +314,35 @@ def graficos(df_filtrado, df_filtrado_linha):
                             'Área construída:',
                             min_value=0,
                             max_value=100000,
-                            value=50,
+                            value=0,
                             step=1
-                        )
-
-                        # Capturando coeficiente e intercepto
-                        coef_area, intercepto = calculo_valor_estimado_formula_reta(df_filtrado)
-
-                        # Calculando o valor estimado
-                        valor_estimado = coef_area * area_usuario + intercepto
-
-                        # Exibindo resultado
-                        # Container estilizado
-                        st.markdown(
-                            f"""
-                            <div style="
-                                background-color:#D6EAF8;   /* cor de fundo */
-                                padding:20px;                /* espaço interno */
-                                border-radius:10px;          /* cantos arredondados */
-                                text-align:center;            /* centralizar texto */
-                            ">
-                                <h2 style="font-size:28px;">Valor Estimado:</h2>
-                                <p style="font-size:32px; font-weight:bold;">R$ {valor_estimado:,.2f}</p>
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-                                
-            #Exibir os graficos de box plot e scatter
+                        ) 
+                valor_estimado = calculo_valor_estimado_formula_reta(df_filtrado, area_usuario)  
+                st.markdown(
+                                f"""
+                                <div style="
+                                    background-color:#D6EAF8;
+                                    padding:20px;
+                                    border-radius:10px;
+                                    text-align:center;
+                                ">
+                                    <h2 style="font-size:28px;">Valor Estimado:</h2>
+                                    <p style="font-size:32px; font-weight:bold;">R$ {valor_estimado:,.2f}</p>
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
+                st.subheader(f'Dataset Com Outliers ({df_filtrado.shape[0]})')
+                st.dataframe(df_filtrado)
+            else:
+                st.subheader(f'Dataset Com Outliers ({df_filtrado.shape[0]})')
+                st.dataframe(df_filtrado)
+                st.error('Filtros selecionados não permite cálculo da reta')
+        #Exibir os graficos de box plot e scatter
             st.plotly_chart(fig7, use_container_width=True, key="boxplot_com_outliers")
-            st.plotly_chart(fig8, use_container_width=True, key="grafico_correlacao_area_valor_outliers_com")
-            st.dataframe(df_filtrado)
-
+            st.plotly_chart(fig8, use_container_width=True, key="grafico_correlacao_area_valor_outliers_com")   
         else:
+            
             Q1 = df_filtrado['Valor_Avaliacao'].quantile(0.25)
             Q3 = df_filtrado['Valor_Avaliacao'].quantile(0.75)
             IQR = Q3 - Q1
@@ -339,102 +350,87 @@ def graficos(df_filtrado, df_filtrado_linha):
             lim_sup = Q3 + 1.5 * IQR
             
             # Sem outliers
+            
             df_sem = df_filtrado[(df_filtrado['Valor_Avaliacao'] >= lim_inf) & (df_filtrado['Valor_Avaliacao'] <= lim_sup)]
+            total_sem_outliers = df_sem.shape[0]
+            if total_com_outliers > total_sem_outliers:
+                st.subheader(f'Dataset Sem Outliers ({df_sem.shape[0]})')
+                st.dataframe(df_sem)
+            else:
+                st.subheader('Dataset Sem Outliers')
+                st.dataframe(df_filtrado)
+            if df_sem.shape[0] >= 2:
+                col44, col45, col46, col47 =  st.columns(4)
+                with col44:
+                    with st.container(border=True):
+                            st.write("📐 Equação da Reta" )
+                            st.markdown(
+                                f"<p style='font-size:24px; '>{(calculo_e_exibicao_formula_reta(df_filtrado))}</p>",
+                                    unsafe_allow_html=True
+                                )
+                with col45:
+                    with st.container(border=True):
+                            st.write("🔗 Correlação" )
+                            st.markdown(
+                                f"<p style='font-size:24px; '>{(calcular_correlacao(df_sem))}</p>",
+                                    unsafe_allow_html=True
+                                )
 
-            # Exibir os cartões e o dataframe
-            col29, col30, col32 = st.columns(3)
-            with col29:
-                maior_valor1 = calculo_maior_valor(df_sem)
-                menor_valor1 = calculo_menor_valor(df_sem)
-                total_transimissoes1 = calculo_total_transmisao(df_sem)
-                with st.container(border=True):
-                    st.write("⬇️ Menor avaliação" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_moeda_br(menor_valor1)}</p>",
-                            unsafe_allow_html=True
-                        )
-                with st.container(border=True):
-                        st.write("⬆️ Maior avaliação" )
-                        st.markdown(
-                            f"<p style='font-size:24px; '>{formatar_moeda_br(maior_valor1)}</p>",
-                                unsafe_allow_html=True
-                            )
-                with st.container(border=True):
-                    st.write("🏫 Total de transmissões" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_milhar(total_transimissoes1)}</p>",
-                            unsafe_allow_html=True
-                        )  
-            with col30:
-                
-                with st.container(border=True):
-                    st.write("📐 Equação da Reta" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{(calculo_e_exibicao_formula_reta(df_sem))}</p>",
-                            unsafe_allow_html=True
-                        )
-                with st.container(border=True):
-                        st.write("⬇️ Menor Área" )
-                        st.markdown(
-                            f"<p style='font-size:24px; '>{formatar_milhar(calculo_menor_area(df_sem))}</p>",
-                                unsafe_allow_html=True
-                            )
-                with st.container(border=True):
-                    st.write("⬆️ Maior Área" )
-                    st.markdown(
-                        f"<p style='font-size:24px; '>{formatar_milhar(calculo_maior_area(df_sem))}</p>",
-                            unsafe_allow_html=True
-                        )  
-            with col32:
+                with col46:
+                    with st.container(border=True):
+                            st.write("📏 Maior Área Construída" )
+                            st.markdown(
+                                f"<p style='font-size:24px; '>{(formatar_milhar(calculo_maior_area(df_sem)))}</p>",
+                                    unsafe_allow_html=True
+                                ) 
+                with col47:
+                    with st.container(border=True):
+                            st.write("📏 Menor Área Construída" )
+                            st.markdown(
+                                f"<p style='font-size:24px; '>{formatar_milhar(calculo_menor_area(df_sem))}</p>",
+                                    unsafe_allow_html=True
+                                )   
                 with st.container():
-                    st.markdown(
-                        "<h3 style='color:black'>Informe a área construída do imóvel para estimativa de valor (m²)</h3>",
+                        st.markdown(
+                            "<h3 style='color:black'>Informe a área construída do imóvel para estimativa de valor (m²)</h3>",
                             unsafe_allow_html=True
-                     )
+                        )
                         # Input do usuário
-                    area_usuario = st.number_input(
-                            '',
+                        area_usuario = st.number_input(
+                            'Área construída:',
                             min_value=0,
                             max_value=100000,
-                            value=50,
+                            value=0,
                             step=1
-                    )
-
-                    # Capturando coeficiente e intercepto
-                    coef_area, intercepto = calculo_valor_estimado_formula_reta(df_sem)
-
-                    # Calculando o valor estimado
-                    valor_estimado = coef_area * area_usuario + intercepto
-
-                    # Exibindo resultado
-                    # Container estilizado
-                    st.markdown(
-                            f"""
-                            <div style="
-                                background-color:#D6EAF8;   /* cor de fundo */
-                                padding:20px;                /* espaço interno */
-                                border-radius:10px;          /* cantos arredondados */
-                                text-align:center;            /* centralizar texto */
-                            ">
-                                <h2 style="font-size:28px;">Valor Estimado:</h2>
-                                <p style="font-size:32px; font-weight:bold;">R$ {valor_estimado:,.2f}</p>
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-
-            #Exibir os graficos de box plot e scatter
+                        ) 
+                valor_estimado = calculo_valor_estimado_formula_reta(df_sem, area_usuario)  
+                st.markdown(
+                                f"""
+                                <div style="
+                                    background-color:#D6EAF8;
+                                    padding:20px;
+                                    border-radius:10px;
+                                    text-align:center;
+                                ">
+                                    <h2 style="font-size:28px;">Valor Estimado:</h2>
+                                    <p style="font-size:32px; font-weight:bold;">R$ {valor_estimado:,.2f}</p>
+                                </div>
+                                """,
+                                unsafe_allow_html=True
+                            )
+                
+                df_outliers = df_filtrado[df_filtrado['Valor_Avaliacao'] > lim_sup]
+                total_outliers = df_outliers.shape[0]
+                st.subheader(f'Outliers ({total_outliers}) registros')
+                st.dataframe(df_outliers)       
+            else: 
+                st.error('Filtros selecionados não permite cálculo da reta')
+        #Exibir os graficos de box plot e scatter
             fig12 = grafico_box_plot_sem_outleirs(df_sem)
             st.plotly_chart(fig12, use_container_width=True, key="boxplot_sem_outliers")
             fig13 = grafico_correlacao_area_valor(df_sem)
             st.plotly_chart(fig13, use_container_width=True, key="grafico_correlacao_area_valor_outliers_sem")
-            st.dataframe(df_sem)
-            
-            # Apenas outliers
-            df_out = df_filtrado[(df_filtrado['Valor_Avaliacao'] < lim_inf) | (df_filtrado['Valor_Avaliacao'] > lim_sup)]
-
-        
-    #st.dataframe(df_filtrado)
+                 
 
     with aba6:
         st.write("Em construção !!!")

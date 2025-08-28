@@ -9,6 +9,7 @@ import statsmodels.api as sm
 import plotly.graph_objects as go
 
 from utils.marcadores import texto, sidebar
+from utils.totalizadores import formatar_moeda_br, formatar_milhar
 
 import plotly.express as px
 
@@ -31,34 +32,77 @@ def grafico_total_licenciamentos_linha(df):
     return fig
 
 # Gráfico de barras
-def grafico_barras(df, nome_coluna, titulo_grafico, top_n):
+def grafico_barras(df, nome_coluna, titulo_grafico, top_n, tipo_calculo, coluna_valor=None):
     
-    #Padrão geral
-    df_bairro = df.groupby(nome_coluna).size().reset_index(name='TOTAL').sort_values('TOTAL', ascending=False).head(top_n)
-    fig1 = px.bar(df_bairro, x=nome_coluna, y='TOTAL')
+    if tipo_calculo == 'quantitativo':
+        # contar registros por categoria
+        df_bairro = (
+            df.groupby(nome_coluna).size()
+            .reset_index(name='TOTAL')
+            .sort_values('TOTAL', ascending=False)
+            .head(top_n)
+        )
 
-    fig1.update_layout(
-        title={'text': titulo_grafico,   'font': {'size': 26}},
-        xaxis_title=nome_coluna,
-        yaxis_title='Total',
-        
-    )
-    
-    # Mostrar valores em cima das barras
-    fig1.update_traces(
-        text=df_bairro['TOTAL'],                  # adiciona os valores
-        texttemplate="%{text:.0f}",               # formata sem decimais
-        textposition="outside"                    # coloca fora da barra
-    )
-    
+        # aplicar formatação de milhar
+        df_bairro["VALOR_FORMATADO"] = formatar_milhar(df_bairro["TOTAL"])
+
+        fig1 = px.bar(
+            df_bairro,
+            x=nome_coluna,
+            y="TOTAL",
+            text="VALOR_FORMATADO",
+            color="TOTAL",
+            color_continuous_scale="Blues"
+        )
+
+        fig1.update_layout(
+            title={'text': titulo_grafico, 'font': {'size': 26}},
+            xaxis_title=nome_coluna,
+            yaxis_title="Total"
+        )
+
+    else:
+        if coluna_valor is None:
+            raise ValueError("Precisa informar `coluna_valor` para calcular mediana ou valor.")
+
+        # calcular mediana por categoria
+        df_bairro = (
+            df.groupby(nome_coluna)[coluna_valor]
+            .median()
+            .reset_index(name='TOTAL')
+            .sort_values('TOTAL', ascending=False)
+            .head(top_n)
+        )
+
+        # aplicar formatação de moeda
+        df_bairro["VALOR_FORMATADO"] = df_bairro["TOTAL"].apply(formatar_moeda_br)
+
+        fig1 = px.bar(
+            df_bairro,
+            x=nome_coluna,
+            y="TOTAL",
+            text="VALOR_FORMATADO",
+            color="TOTAL",
+            color_continuous_scale="Blues"
+        )
+
+        fig1.update_layout(
+            title={'text': titulo_grafico, 'font': {'size': 26}},
+            xaxis_title=nome_coluna,
+            yaxis_title="Mediana"
+        )
+
+    # configuração comum
+    fig1.update_traces(textposition="outside")
+    fig1.update_coloraxes(showscale=False)
     return fig1
-
+    
 # Grafico tree map
 def grafico_tree_map(df, nome_coluna, titulo_grafico):
     
     # Padrão geral
     df_agrupado = df.groupby(nome_coluna).size().reset_index(name='TOTAL').sort_values('TOTAL', ascending=False)
-    fig2 = px.treemap(df_agrupado, path=[nome_coluna], values='TOTAL', color=nome_coluna)
+    fig2 = px.treemap(df_agrupado, path=[nome_coluna], values='TOTAL', color=nome_coluna,  color_discrete_sequence=px.colors.sequential.Blues)
 
     fig2.update_layout(
         title={
@@ -93,7 +137,7 @@ def grafico_rosca(df, nome_coluna, titulo_grafico):
         values='TOTAL',
         names=nome_coluna,
         hole=0.5,
-        color_discrete_sequence=px.colors.qualitative.Set3
+        color_discrete_sequence=['#1f4e79', '#769fd0']
     )
 
     fig.update_layout(
@@ -184,8 +228,9 @@ def grafico_correlacao_area_valor(df):
     # Ajustar modelo de regressão linear
     X = sm.add_constant(df['Area_Construida'])
     modelo = sm.OLS(df['Valor_Avaliacao'], X).fit()
-    intercepto = modelo.params['const']
-    coef_area = modelo.params['Area_Construida']
+    # intercepto e coeficiente de forma segura
+    intercepto = modelo.params.get("const", modelo.params.iloc[0])
+    coef_area = modelo.params.get("Area_Construida", modelo.params.iloc[-1])
 
     # Criar scatter plot
     fig = px.scatter(
@@ -214,6 +259,7 @@ def grafico_correlacao_area_valor(df):
     )
 
     # Adiciona a equação da reta como anotação
+    """
     fig.add_annotation(
         x=df['Area_Construida'].max() * 0.6,
         y=df['Valor_Avaliacao'].max() * 0.9,
@@ -221,12 +267,12 @@ def grafico_correlacao_area_valor(df):
         showarrow=False,
         font=dict(color="blue", size=18)
     )
-
+    """
     fig.update_traces(marker=dict(size=6, opacity=0.6))
 
     return fig
 
-def grafico_mediana(df):
+def grafico_mediana(df, valor_coluna, titulo):
     # garantir que a coluna seja datetime
     df["Data_Transacao"] = pd.to_datetime(df["Data_Transacao"])
 
@@ -234,7 +280,7 @@ def grafico_mediana(df):
     df["AnoMes"] = df["Data_Transacao"].dt.to_period("M").astype(str)
 
     # calcular a mediana
-    df_stats = df.groupby("AnoMes")["Valor_Avaliacao"].agg(
+    df_stats = df.groupby("AnoMes")[valor_coluna].agg(
         Valor="median"
     ).reset_index()
 
@@ -244,45 +290,78 @@ def grafico_mediana(df):
         x="AnoMes",
         y="Valor",
         markers=True,
-        labels={"AnoMes": "Período", "Valor": "Valor da Avaliação"},
-        title="Mediana das avaliações dos imóveis"
+        labels={"AnoMes": "Período", "Valor": valor_coluna},
+        title=titulo
     )
-
     fig.update_layout(
-        title={'text': 'Mediana das avaliações dos imóveis', 'font': {'size': 22}},
+        title={'text': titulo, 'font': {'size': 22}},
         xaxis_tickangle=-45
     )
 
     return fig
 
 # Gráfico de colunas - Atenção colocar a orientacao para H para ter efeito horizontal nas barras
-def grafico_colunas(df, coluna_principal, coluna_valor, titulo_grafico, top_n):
-    # calcular a mediana
-    df_stats = df.groupby(coluna_principal)[coluna_valor].median().reset_index()
-    
-    # ordenar do maior para o menor e pegar os 10 primeiros
-    df_stats = df_stats.sort_values(coluna_valor, ascending=True).head(top_n)
 
-    # gráfico horizontal
-    fig = px.bar(
-        df_stats,
-        x=coluna_valor,
-        y=coluna_principal,
-        orientation="h",
-        text=coluna_valor,
-        color=coluna_valor,          # mantém cores
-        color_continuous_scale="viridis"
-    )
+# Gráfico de colunas horizontal
+def grafico_colunas(df, coluna_principal, coluna_valor, titulo_grafico, top_n, tipo_calculado, cor):
 
-    # layout
-    fig.update_traces(texttemplate="R$ %{text:,.0f}", textposition="inside", insidetextanchor="middle")
+    if tipo_calculado != 'quantitativo':
+        if coluna_valor is None:
+            raise ValueError("Precisa informar `coluna_valor` para calcular mediana ou valor.")
+
+        # calcular mediana
+        df_stats = df.groupby(coluna_principal)[coluna_valor].median().reset_index()
+
+        # ordenar do maior para o menor e pegar os top_n
+        df_stats = df_stats.sort_values(coluna_valor, ascending=False).head(top_n)
+
+        # aplicar formatação de moeda
+        df_stats["VALOR_FORMATADO"] = df_stats[coluna_valor].apply(formatar_moeda_br)
+
+        # gráfico horizontal
+        fig = px.bar(
+            df_stats,
+            x=coluna_valor,
+            y=coluna_principal,
+            orientation="h",
+            text="VALOR_FORMATADO",
+            color=coluna_valor,
+            color_continuous_scale=[cor, "lightgray"] if isinstance(cor, str) else cor
+        )
+
+        y_title = "Mediana"
+
+    else:
+        # calcular contagem de registros
+        df_stats = df.groupby(coluna_principal).size().reset_index(name="TOTAL")
+        df_stats = df_stats.sort_values("TOTAL", ascending=False).head(top_n)
+
+        # aplicar formatação de milhar
+        df_stats["VALOR_FORMATADO"] = df_stats["TOTAL"].apply(formatar_milhar)
+
+        # gráfico horizontal
+        fig = px.bar(
+            df_stats,
+            x="TOTAL",
+            y=coluna_principal,
+            orientation="h",
+            text="VALOR_FORMATADO",
+            color="TOTAL",
+            color_continuous_scale=[cor, "lightgray"] if isinstance(cor, str) else cor
+        )
+
+        y_title = "Total"
+
+    # layout comum
+    fig.update_traces(textposition="inside", insidetextanchor="middle")
     fig.update_layout(
         title={'text': titulo_grafico, 'font': {'size': 22}},
         height=400,
-        showlegend=False
+        showlegend=False,
+        yaxis=dict(categoryorder="total ascending"),  # maiores valores no topo
+        yaxis_title=y_title
     )
 
-    # remove a barra de cores contínua
     fig.update_coloraxes(showscale=False)
-
     return fig
+

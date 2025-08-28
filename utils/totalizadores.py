@@ -1,5 +1,6 @@
 import pandas as pd
 import statsmodels.api as sm
+import streamlit as st
 
 # Calculo dos totalizadores
 def calculo_total_transmisao(df_filtrado):
@@ -60,22 +61,62 @@ def calculo_menor_area(df):
 def calculo_maior_area(df):
     return df['Area_Construida'].max()
 
+# Para calculo da reta, devemos levar em consideração: o df_filtrado é menor que 2, o valor do resultado é negativo.
 def calculo_e_exibicao_formula_reta(df):
-    # Ajustar modelo de regressão linear
-    X = sm.add_constant(df['Area_Construida'])
-    modelo = sm.OLS(df['Valor_Avaliacao'], X).fit()
-    intercepto = modelo.params['const']
-    coef_area = modelo.params['Area_Construida']
-    return f"Equação da Reta -> Fx = {coef_area:.2f} X + {intercepto:.2f}"
+    # ✅ Conta quantos imóveis existem
+    cont = df.shape[0]
 
-def calculo_valor_estimado_formula_reta(df):
-    # Ajustar modelo de regressão linear
-    X = sm.add_constant(df['Area_Construida'])
-    modelo = sm.OLS(df['Valor_Avaliacao'], X).fit()
-    intercepto = modelo.params['const']
-    coef_area = modelo.params['Area_Construida']
-    
-    return coef_area, intercepto
+    # Se houver menos de 2 imóveis, não é possível calcular reta
+    if cont < 2:
+        return "⚠️ Quantidade de imóveis insuficiente para cálculo da reta."
+
+    try:
+        # Ajusta modelo de regressão linear
+        X = sm.add_constant(df['Area_Construida'], has_constant='add')
+        modelo = sm.OLS(df['Valor_Avaliacao'], X).fit()
+
+        # Coeficientes seguros
+        intercepto = modelo.params.get("const", modelo.params.iloc[0])
+        coef_area = modelo.params.get("Area_Construida", modelo.params.iloc[-1])
+
+        # Se valores negativos, não faz sentido
+        #if coef_area < 0 or intercepto < 0:
+            #return "⚠️ Valores negativos –. Os filtros selecionados retornam valores negativos e não interessam"
+
+        # Retorna equação formatada
+        texto = formatar_equacao_reta(coef_area, intercepto)
+        return texto
+
+    except Exception as e:
+        return f"Erro ao calcular a reta: {e}"
+
+def calculo_valor_estimado_formula_reta(df, area):
+    # Prepara X e y
+    X = sm.add_constant(df['Area_Construida'], has_constant='add')
+    y = df['Valor_Avaliacao']
+
+    # Ajusta o modelo de regressão linear
+    modelo = sm.OLS(y, X).fit()
+
+    # Coeficientes
+    intercepto = modelo.params.get("const", modelo.params.iloc[0])
+    coef_area = modelo.params.get("Area_Construida", modelo.params.iloc[-1])
+
+    # Valor estimado para a área informada
+    valor_estimado = intercepto + coef_area * area
+
+    return valor_estimado
+
+def calcular_correlacao(df):
+    corr = df['Area_Construida'].corr(df['Valor_Avaliacao'])
+    # Retorna como float arredondado
+    return round(corr, 3)
+
+def formatar_equacao_reta(coef_area, intercepto):
+    if intercepto < 0:
+        return f"y = {coef_area:,.2f} x - {abs(intercepto):,.2f}"
+    else:
+        return f"y = {coef_area:,.2f} x + {intercepto:,.2f}"
 
 """
 mediana = df[df['ano'] == 2025]['valor_avaliacao'].median()
@@ -89,7 +130,7 @@ amplitude_2025 = maior - menor
 
 """
 
-
+# Funcoes de formatacao
 
 def formatar_moeda_br(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -101,3 +142,12 @@ def formatar_milhar(valor):
         return 0
     return f"{int(valor):,}".replace(",", ".")
 
+def formatar_equacao(coef, intercepto):
+    # Usa ponto decimal para float e vírgula para milhar
+    coef_str = f"{coef:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    intercepto_str = f"{abs(intercepto):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    
+    # Ajusta sinal do intercepto
+    sinal = "+" if intercepto >= 0 else "-"
+    
+    return f"Fx = {coef_str} × Área {sinal} {intercepto_str}"
