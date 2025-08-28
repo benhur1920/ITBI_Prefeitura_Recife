@@ -38,9 +38,7 @@ def graficos(df_filtrado, df_filtrado_linha):
     fig9 = grafico_mediana(df_filtrado, 'Valor_Avaliacao', 'Mediana das avaliações de valor das transmissões' )
     fig10 = grafico_colunas(df_filtrado, 'Região', 'Valor_Avaliacao', 'Mediana do valor de transmissão por região', None, "mediana", "Blue")
     fig11 = grafico_colunas(df_filtrado, 'Bairro', 'Valor_Avaliacao', 'Mediana do valor de transmissão por Bairro -Top 10', 10, "mediana", "Blue")
-    fig13 = grafico_mediana(df_filtrado, 'Area_Construida', 'Mediana das áreas das transmissões' )
-    fig14 = grafico_colunas(df_filtrado, 'Região', 'Area_Construida', 'Mediana do valor de transmissão por região', None, "quantitativo", "gray")
-    fig15 = grafico_colunas(df_filtrado, 'Bairro', 'Area_Construida', 'Mediana do valor de transmissão por Bairro -Top 10', 10, "quantitativo", "gray")
+    
     fig12 = grafico_barras(df_filtrado, 'Tipo_Construcao', 'Distribuição do ITBI por tipo de construção', None, 'quantitativo')
 
 
@@ -126,15 +124,6 @@ def graficos(df_filtrado, df_filtrado_linha):
         with col22:
             st.plotly_chart(fig11, use_container_width=True, key="grafico_colunas_bairro")
 
-        # Mostrando a média de áreas distribuição por tipo de acabamento e tipo de construção
-        st.subheader('Analise das áreas contruída dos  imóveis')
-        st.plotly_chart(fig13, use_container_width=True, key="grafico_mediana_area")
-
-        col21, col22 = st.columns([2,2], vertical_alignment='center', gap='medium')
-        with col21:
-            st.plotly_chart(fig14, use_container_width=True, key="grafico_colunas_regiao_area")
-        with col22:
-            st.plotly_chart(fig15, use_container_width=True, key="grafico_colunas_bairro_area")
         
 
     # Utilizando a aba2 para mostras as medidas de tendência central e grafico valor médio(média e mediana) e desvio padrão

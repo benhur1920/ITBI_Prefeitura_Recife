@@ -290,7 +290,7 @@ def grafico_mediana(df, valor_coluna, titulo):
         x="AnoMes",
         y="Valor",
         markers=True,
-        labels={"AnoMes": "Período", "Valor": valor_coluna},
+        labels={"AnoMes": "Período", "Valor": "Valor da Avaliação"},
         title=titulo
     )
     fig.update_layout(
@@ -304,7 +304,7 @@ def grafico_mediana(df, valor_coluna, titulo):
 
 # Gráfico de colunas horizontal
 def grafico_colunas(df, coluna_principal, coluna_valor, titulo_grafico, top_n, tipo_calculado, cor):
-
+    
     if tipo_calculado != 'quantitativo':
         if coluna_valor is None:
             raise ValueError("Precisa informar `coluna_valor` para calcular mediana ou valor.")
@@ -326,7 +326,7 @@ def grafico_colunas(df, coluna_principal, coluna_valor, titulo_grafico, top_n, t
             orientation="h",
             text="VALOR_FORMATADO",
             color=coluna_valor,
-            color_continuous_scale=[cor, "lightgray"] if isinstance(cor, str) else cor
+            color_continuous_scale="Blues"
         )
 
         y_title = "Mediana"
@@ -347,7 +347,7 @@ def grafico_colunas(df, coluna_principal, coluna_valor, titulo_grafico, top_n, t
             orientation="h",
             text="VALOR_FORMATADO",
             color="TOTAL",
-            color_continuous_scale=[cor, "lightgray"] if isinstance(cor, str) else cor
+            color_continuous_scale="Blues"
         )
 
         y_title = "Total"
@@ -364,4 +364,3 @@ def grafico_colunas(df, coluna_principal, coluna_valor, titulo_grafico, top_n, t
 
     fig.update_coloraxes(showscale=False)
     return fig
-
