@@ -21,6 +21,12 @@ def calculo_mediana(df_filtrado):
     #mediana = formatar_moeda_br(mediana)
     return mediana
 
+def calculo_mediana_area(df_filtrado):
+    mediana =  df_filtrado['Area_Construida'].median()
+    #mediana = formatar_moeda_br(mediana)
+    return mediana
+
+
 def calculo_variancia(df_filtrado):
     variancia =  df_filtrado['Valor_Avaliacao'].var()
     #variancia = formatar_moeda_br(variancia)

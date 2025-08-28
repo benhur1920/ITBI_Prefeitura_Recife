@@ -4,7 +4,7 @@ import streamlit as st
 
 
 
-from utils.totalizadores import calculo_total_transmisao, calculo_media , calculo_mediana, calculo_variancia, calculo_variancia_populacional, calculo_desvio, calculo_maior_valor, calculo_menor_valor, calculo_amplitude, formatar_milhar, formatar_moeda_br, calcular_correlacao, calculo_maior_area, calculo_menor_area, calculo_e_exibicao_formula_reta, calculo_valor_estimado_formula_reta, formatar_equacao_reta
+from utils.totalizadores import calculo_total_transmisao, calculo_media , calculo_mediana, calculo_variancia, calculo_variancia_populacional, calculo_desvio, calculo_maior_valor, calculo_menor_valor, calculo_amplitude, formatar_milhar, formatar_moeda_br, calcular_correlacao, calculo_maior_area, calculo_menor_area, calculo_e_exibicao_formula_reta, calculo_valor_estimado_formula_reta, formatar_equacao_reta, calculo_mediana_area
 from utils.graficos import grafico_total_licenciamentos_linha, grafico_barras, grafico_tree_map, grafico_rosca, grafico_media_mediana_desvio, grafico_box_plot, grafico_correlacao_area_valor, grafico_mediana, grafico_colunas, grafico_box_plot_sem_outleirs
 from utils.marcadores import divisor
 from utils.dataframe import mainDataframe
@@ -93,7 +93,7 @@ def graficos(df_filtrado, df_filtrado_linha):
 
     # Mostrar os dados de media dos valores de transmissão dos imóveis com serie histórica, gráfico colunas por região e por bairros 
     with aba3:
-        col19,  col20 =  st.columns(2)
+        col19,  col20, col48 =  st.columns(3)
         with col19:
             with st.container(border=True):
                         st.write("🎯 Valor mediana da avaliação" )
@@ -103,6 +103,14 @@ def graficos(df_filtrado, df_filtrado_linha):
                             )
         with col20:
             with st.container(border=True):
+                        st.write("🏫 Mediana da área construída m2" )
+                        st.markdown(
+                            f"<p style='font-size:24px; '>{formatar_milhar(calculo_mediana_area(df_filtrado))}</p>",
+                                unsafe_allow_html=True
+                            )  
+            
+        with col48:
+             with st.container(border=True):
                         st.write("🏫 Total de transmissões" )
                         st.markdown(
                             f"<p style='font-size:24px; '>{formatar_milhar(total_transimissoes)}</p>",
