@@ -4,6 +4,12 @@ import streamlit as st
 import joblib
 import pandas as pd
 
+# Carregar o modelo treinado só uma vez
+modelo = joblib.load("modelo_itbi.pkl")
+
+
+
+
 from utils.totalizadores import calculo_total_transmisao, calculo_media , calculo_mediana, calculo_variancia, calculo_variancia_populacional, calculo_desvio, calculo_maior_valor, calculo_menor_valor, calculo_amplitude, formatar_milhar, formatar_moeda_br, calcular_correlacao, calculo_maior_area, calculo_menor_area, calculo_e_exibicao_formula_reta, calculo_valor_estimado_formula_reta, formatar_equacao_reta, calculo_mediana_area
 from utils.graficos import grafico_total_licenciamentos_linha, grafico_barras, grafico_tree_map, grafico_rosca, grafico_media_mediana_desvio, grafico_box_plot, grafico_correlacao_area_valor, grafico_mediana, grafico_colunas, grafico_box_plot_sem_outleirs
 from utils.marcadores import divisor
@@ -433,7 +439,7 @@ def graficos(df_filtrado, df_filtrado_linha):
         st.title("Em construção !!!")
         
         # Carregar modelo treinado
-        modelo = joblib.load("modelo_itbi.pkl")
+        #modelo = joblib.load("modelo_itbi.pkl")
         st.title("🏠 Predição de Valor de Imóvel - ITBI")
         st.subheader("Forneça abaixo os parametros para o modelo preditivo")
         st.write("Dados de melhor qualidade geram predições mais precisas !!!")
