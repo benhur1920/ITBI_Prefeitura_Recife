@@ -19,7 +19,7 @@ from utils import sobre, dataframe, dashboards
 
 
 # ----------------------------
-# Configuração da página
+# Configuração da página. Fica sempre no início do projeto
 # ----------------------------
 st.set_page_config(
     layout="wide",
@@ -65,8 +65,8 @@ df = carregar_arquivo_parquet()
 df_filtrado = df.copy()
 
 # Última e primeira data
-ultima_data = df['Data_Transacao'].max() if not df.empty else None
-primeira_data = df['Data_Transacao'].min() if not df.empty else None
+ultima_data = df['Data_Transacao'].max().strftime("%d/%m/%Y") if not df.empty else None
+primeira_data = df['Data_Transacao'].min().strftime("%d/%m/%Y") if not df.empty else None
 
 # ----------------------------
 # Função do título da página
@@ -75,8 +75,9 @@ def titulo_pagina():
     col1, col2 = st.columns([3, 1])
     with col1:
         st.markdown(
-            "<h1>ITBI do Recife</h1>"
-            "<p>Fonte: Dados abertos da Prefeitura do Recife</p>",
+            "<h1>ITBI - Imposto sobre Tramissão de Bens Imóvies - Recife</h1>"
+            "<p>Fonte: Dados abertos da Prefeitura do Recife</p>"
+            f"<p>Perído: {primeira_data} a {ultima_data}</p>",
             unsafe_allow_html=True
         )
     with col2:
@@ -90,7 +91,7 @@ def titulo_pagina():
             </div>
             """, unsafe_allow_html=True
         )
-        st.write(f"📅 Dados atualizados em: {hoje.strftime('%d/%m/%Y')}")
+        st.write(f"📅 Data: {hoje.strftime('%d/%m/%Y')}")
 
 # ----------------------------
 # Funções de filtro

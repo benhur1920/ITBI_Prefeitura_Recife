@@ -1,8 +1,8 @@
 import matplotlib as pl
 import plotly.express as px
 import streamlit as st
-
-
+import joblib
+import pandas as pd
 
 from utils.totalizadores import calculo_total_transmisao, calculo_media , calculo_mediana, calculo_variancia, calculo_variancia_populacional, calculo_desvio, calculo_maior_valor, calculo_menor_valor, calculo_amplitude, formatar_milhar, formatar_moeda_br, calcular_correlacao, calculo_maior_area, calculo_menor_area, calculo_e_exibicao_formula_reta, calculo_valor_estimado_formula_reta, formatar_equacao_reta, calculo_mediana_area
 from utils.graficos import grafico_total_licenciamentos_linha, grafico_barras, grafico_tree_map, grafico_rosca, grafico_media_mediana_desvio, grafico_box_plot, grafico_correlacao_area_valor, grafico_mediana, grafico_colunas, grafico_box_plot_sem_outleirs
@@ -248,7 +248,7 @@ def graficos(df_filtrado, df_filtrado_linha):
         else:
             with st.form(key='form_consulta'):
                 numero_processo_input = st.text_input(
-                    "Informe o identificador do imóvel", 
+                    "Informe o identificador do imóvel (Index)", 
                     value=st.session_state.numero_processo
                 )
                 submit = st.form_submit_button("Consultar")
@@ -430,10 +430,63 @@ def graficos(df_filtrado, df_filtrado_linha):
                  
 
     with aba6:
-        st.write("Em construção !!!")
+        st.title("Em construção !!!")
         
+        # Carregar modelo treinado
+        modelo = joblib.load("modelo_itbi.pkl")
+        st.title("🏠 Predição de Valor de Imóvel - ITBI")
+        st.subheader("Forneça abaixo os parametros para o modelo preditivo")
+        st.write("Dados de melhor qualidade geram predições mais precisas !!!")
+        col60, col61, col62  =  st.columns([1,1,2])
+        with col60:
+            bairro = st.selectbox("Bairro", df_filtrado["Bairro"].sort_values().unique(), key="bairro")
+            padrao = st.selectbox("Padrão de Acabamento", df_filtrado["Padrao_Acabamento"].sort_values().unique(), key="padrao")
+            ocupacao = st.selectbox("Tipo de Ocupação", df_filtrado["Tipo_Ocupacao"].sort_values().unique(), key="ocupacao")
+            construcao = st.selectbox("Tipo de Construção", df_filtrado["Tipo_Construcao"].sort_values().unique(), key="construcao")
+
+        with col61:
+            regiao = st.selectbox("Região (RPA)", df_filtrado["Região"].sort_values().unique(), key="regiao")
+            area_terreno = st.number_input("Área do Terreno (m²)", min_value=0, step=1, key="area_terreno")
+            area_construida = st.number_input("Área Construída (m²)", min_value=0, step=1, key="area_construida")
 
 
+
+        
+        with col62:
+            # Centralizar o botão na coluna
+            st.markdown("<div style='display:flex; justify-content:center;'>", unsafe_allow_html=True)
+            if st.button("Prever Valor do Imóvel"):
+                entrada = pd.DataFrame([{
+                    "Bairro": bairro,
+                    "Padrao_Acabamento": padrao,
+                    "Area_Terreno": area_terreno,
+                    "Area_Construida": area_construida,
+                    "Tipo_Ocupacao": ocupacao,
+                    "Região": regiao,
+                    "Tipo_Construcao": construcao
+                }])
+                pred = modelo.predict(entrada)[0]
+                # Resultado com apenas borda, sem fundo
+                st.markdown(f"""
+                    <div style="border:2px solid #0052cc; padding:30px; border-radius:10px; text-align:center;">
+                        <h2>💰 Valor venal estimado:</h2>
+                        <h1>R$ {pred:,.2f}</h1>
+                    </div>
+                    """, unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <div style="text-align: justify; font-size: 17px">
+            <h3>Nota</h3>
+                <p>
+                    É importante destacar que o valor venal registrado no ITBI não representa, necessariamente, o valor de mercado de cada imóvel. Os dados refletem o valor declarado para fins tributários e não capturam aspectos qualitativos, como estado de conservação, reformas, localização exata na rua, vizinhança ou fatores subjetivos de valorização. Portanto, os modelos baseados nesses registros oferecem uma referência estatística de preços, mas não substituem uma avaliação individual ou comercial realizada em campo.
+                </p>
+                                                
+        </div>
+            """,
+        unsafe_allow_html=True
+    )
 def mainGraficos(df_filtrado, df_filtrado_linha):
     divisor()
     graficos(df_filtrado, df_filtrado_linha) # Passe o df_filtrado e o df_filtrado_linha para a função graficos
