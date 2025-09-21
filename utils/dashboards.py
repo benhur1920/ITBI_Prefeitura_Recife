@@ -3,7 +3,7 @@ import plotly.express as px
 import streamlit as st
 import joblib
 import pandas as pd
-
+import os
 # Carregar o modelo treinado só uma vez
 modelo = joblib.load("modelo_itbi.pkl")
 
@@ -436,32 +436,33 @@ def graficos(df_filtrado, df_filtrado_linha):
                  
 
     with aba6:
-        st.title("Em construção !!!")
-        
         # Carregar modelo treinado
         #modelo = joblib.load("modelo_itbi.pkl")
         st.title("🏠 Predição de Valor de Imóvel - ITBI")
         st.subheader("Forneça abaixo os parametros para o modelo preditivo")
-        st.write("Dados de melhor qualidade geram predições mais precisas !!!")
-        col60, col61, col62  =  st.columns([1,1,2])
+        st.write("⚠️Dados de melhor qualidade geram predições mais precisas !!!")
+        col60, col61, col62 = st.columns([1,1,1])
+
+        # Coluna 1: dados do imóvel
         with col60:
-            bairro = st.selectbox("Bairro", df_filtrado["Bairro"].sort_values().unique(), key="bairro")
-            padrao = st.selectbox("Padrão de Acabamento", df_filtrado["Padrao_Acabamento"].sort_values().unique(), key="padrao")
-            ocupacao = st.selectbox("Tipo de Ocupação", df_filtrado["Tipo_Ocupacao"].sort_values().unique(), key="ocupacao")
-            construcao = st.selectbox("Tipo de Construção", df_filtrado["Tipo_Construcao"].sort_values().unique(), key="construcao")
+            area_terreno = st.number_input("📐 Área do Terreno (m²)", min_value=0, step=1, key="area_terreno")
+            area_construida = st.number_input("🏗️ Área Construída (m²)", min_value=0, step=1, key="area_construida")
+            bairro = st.selectbox("📍 Bairro", df_filtrado["Bairro"].sort_values().unique(), key="bairro")
+            regiao = df_filtrado.loc[df_filtrado["Bairro"] == bairro, "Região"].iloc[0]
+            #st.info(f"Zona {regiao}")
 
+        # Coluna 2: características do imóvel
         with col61:
-            regiao = st.selectbox("Região (RPA)", df_filtrado["Região"].sort_values().unique(), key="regiao")
-            area_terreno = st.number_input("Área do Terreno (m²)", min_value=0, step=1, key="area_terreno")
-            area_construida = st.number_input("Área Construída (m²)", min_value=0, step=1, key="area_construida")
+            padrao = st.selectbox("✨ Padrão de Acabamento", df_filtrado["Padrao_Acabamento"].sort_values().unique(), key="padrao")
+            ocupacao = st.selectbox("🏢 Tipo de Ocupação", df_filtrado["Tipo_Ocupacao"].sort_values().unique(), key="ocupacao")
+            construcao = st.selectbox("🏠 Tipo de Construção", df_filtrado["Tipo_Construcao"].sort_values().unique(), key="construcao")
 
-
-
-        
+        # Coluna 3: botão e resultado
         with col62:
-            # Centralizar o botão na coluna
-            st.markdown("<div style='display:flex; justify-content:center;'>", unsafe_allow_html=True)
-            if st.button("Prever Valor do Imóvel"):
+            # Centralizar botão e resultado
+            st.markdown("<div style='display:flex; flex-direction:column; align-items:center;'>", unsafe_allow_html=True)
+            
+            if st.button("🔮 Prever Valor do Imóvel"):
                 entrada = pd.DataFrame([{
                     "Bairro": bairro,
                     "Padrao_Acabamento": padrao,
@@ -472,27 +473,61 @@ def graficos(df_filtrado, df_filtrado_linha):
                     "Tipo_Construcao": construcao
                 }])
                 pred = modelo.predict(entrada)[0]
-                # Resultado com apenas borda, sem fundo
+
                 st.markdown(f"""
-                    <div style="border:2px solid #0052cc; padding:30px; border-radius:10px; text-align:center;">
-                        <h2>💰 Valor venal estimado:</h2>
-                        <h1>R$ {pred:,.2f}</h1>
+                    <div style="border:2px solid #0052cc; padding:10px; border-radius:12px; text-align:center; width:100%;">
+                        <h3>💰 Valor venal estimado</h3>
+                        <h2 style="color:#0052cc;">R$ {pred:,.2f}</h2>
                     </div>
                     """, unsafe_allow_html=True)
+            
             st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown(
-        """
-        <div style="text-align: justify; font-size: 17px">
-            <h3>Nota</h3>
-                <p>
-                    É importante destacar que o valor venal registrado no ITBI não representa, necessariamente, o valor de mercado de cada imóvel. Os dados refletem o valor declarado para fins tributários e não capturam aspectos qualitativos, como estado de conservação, reformas, localização exata na rua, vizinhança ou fatores subjetivos de valorização. Portanto, os modelos baseados nesses registros oferecem uma referência estatística de preços, mas não substituem uma avaliação individual ou comercial realizada em campo.
-                </p>
-                                                
-        </div>
-            """,
-        unsafe_allow_html=True
-    )
+        
+        divisor()
+
+        col63, col64 =  st.columns([1,3])
+
+        with col63:
+    # Caminhos das imagens
+            imagens = {
+                "Casa": ("Casa.jpg", "Casa"),
+                "Mocambo": ("Mocambo.jpg", "Casa"),
+                "Galpão": ("galpao.jpg", "Galpão"),
+                "Edificação Industrial": ("Industria.jpg", "Industria"),
+                "Sala <= 4 Pavimentos": ("Sala.jpg", "Sala"),
+                "Sala > 4 Pavimentos": ("Sala.jpg", "Sala"),
+                "Edificação Garagem": ("garajem.jpg", "Garagem"),
+                "Instituição Financeira": ("banco.jpg", "Instituição Financeira"),
+                "Instituição Hospitalar": ("hospital.jpg", "Instituição Hospitalar"),
+                "Posto de Combustível": ("Posto.jpg", "Posto de Combustível"),
+                "Hotel": ("hotel.jpg", "Hotel"),
+                "Apartamento <= 4 Pavimentos": ("Apartamento.jpg", "Apartamento"),
+                "Apartamento > 4 Pavimentos": ("Apartamento.jpg", "Apartamento"),
+                "Edificação Especial": ("Apartamento.jpg", "Apartamento"),
+                "Loja <= 4 Pavimentos": ("Loja.jpg", "Loja"),
+                "Loja > 4 Pavimentos": ("Loja.jpg", "Loja"),
+            }
+
+            # Verifica se o tipo de construção existe no dicionário
+            if construcao in imagens:
+                img_file, legenda = imagens[construcao]
+                img_path = os.path.join(os.path.dirname(__file__), '..', 'images', img_file)
+                st.image(img_path, caption=legenda)
+
+        with col64:         
+            st.markdown(
+                """
+                <div style="text-align: justify; font-size: 17px">
+                    <h3>Nota</h3>
+                        <p>
+                            É importante destacar que o valor venal registrado no ITBI não representa, necessariamente, o valor de mercado de cada imóvel. Os dados refletem o valor declarado para fins tributários e não capturam aspectos qualitativos, como estado de conservação, reformas, localização exata na rua, vizinhança ou fatores subjetivos de valorização. Portanto, os modelos baseados nesses registros oferecem uma referência estatística de preços, mas não substituem uma avaliação individual ou comercial realizada em campo.
+                        </p>
+                                                        
+                </div>
+                    """,
+                unsafe_allow_html=True
+                )
 def mainGraficos(df_filtrado, df_filtrado_linha):
     divisor()
     graficos(df_filtrado, df_filtrado_linha) # Passe o df_filtrado e o df_filtrado_linha para a função graficos
