@@ -271,7 +271,8 @@ def graficos(df_filtrado, df_filtrado_linha):
                 df_resultado["Data_Transacao"] = df_resultado["Data_Transacao"].dt.strftime("%d/%m/%Y")  # usar df_resultado
 
                 st.dataframe(df_resultado, use_container_width=True)
-
+                totalLinhas = df_resultado.shape[0]
+                st.metric("📄 Total de Imóveis", value=totalLinhas, border=False)
         elif opcao == "Bairro":
             bairros = df_filtrado["Bairro"].dropna().sort_values().unique()
             bairros = [""] + list(bairros)
@@ -286,7 +287,8 @@ def graficos(df_filtrado, df_filtrado_linha):
                 df_resultado["Data_Transacao"] = df_resultado["Data_Transacao"].dt.strftime("%d/%m/%Y")
 
                 st.dataframe(df_resultado, use_container_width=True)
-
+                totalLinhas = df_resultado.shape[0]
+                st.metric("📄 Total de Imóveis", value=totalLinhas, border=False)
     with aba5:
         st.title("📉 Estime o valor preditivo  usando regressão linear")
         st.subheader("Visualize o valor preditivo dos bens imoveis informando o tamanho da área construídos e filtre as opções ")
@@ -347,7 +349,7 @@ def graficos(df_filtrado, df_filtrado_linha):
                 st.markdown(
                                 f"""
                                 <div style="
-                                    background-color:#D6EAF8;
+                                    border: 2px solid #0052cc;
                                     padding:20px;
                                     border-radius:10px;
                                     text-align:center;
@@ -433,7 +435,7 @@ def graficos(df_filtrado, df_filtrado_linha):
                 st.markdown(
                                 f"""
                                 <div style="
-                                    background-color:#D6EAF8;
+                                    border: 2px solid #0052cc;
                                     padding:20px;
                                     border-radius:10px;
                                     text-align:center;
