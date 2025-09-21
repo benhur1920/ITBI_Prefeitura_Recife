@@ -53,6 +53,8 @@ def graficos(df_filtrado, df_filtrado_linha):
 
     # Utilizando a aba1 para dashboards gerais e entendimento do dataframe
     with aba1:
+        st.title("📊 Dados gerais")
+        st.subheader("Visualize os principais indicadores de  bens imóveis da cidade do Recife")
         # Mostrando o total de transmissões e a distribuição por anos no gráfico de linhas
         col1, col2 = st.columns([1,3], vertical_alignment='center', gap='small')
         with col1:
@@ -97,6 +99,8 @@ def graficos(df_filtrado, df_filtrado_linha):
 
     # Mostrar os dados de media dos valores de transmissão dos imóveis com serie histórica, gráfico colunas por região e por bairros 
     with aba3:
+        st.title("💰 Valores médios ao longo do tempo")
+        st.subheader("Visualize os valores médios ao longo do tempo para os  bens imóveis da cidade do Recife")
         col19,  col20, col48 =  st.columns(3)
         with col19:
             with st.container(border=True):
@@ -121,7 +125,7 @@ def graficos(df_filtrado, df_filtrado_linha):
                                 unsafe_allow_html=True
                             )  
         # Mostrando a média de distribuição por tipo de acabamento e tipo de construção
-        st.subheader('Analise de desempenho de valores medios dos imóveis')
+        #st.subheader('Analise de desempenho de valores medios dos imóveis')
         st.plotly_chart(fig9, use_container_width=True, key="grafico_mediana")
 
         col21, col22 = st.columns([2,2], vertical_alignment='center', gap='medium')
@@ -134,6 +138,8 @@ def graficos(df_filtrado, df_filtrado_linha):
 
     # Utilizando a aba2 para mostras as medidas de tendência central e grafico valor médio(média e mediana) e desvio padrão
     with aba2:
+        st.title("📊 Medidas de tendência central")
+        st.subheader("Visualize os valores de medidas de tendência central para os  bens imóveis da cidade do Recife")
         col1, col2, col3 = st.columns(3)
         with col1:
             with st.container(border=True):
@@ -217,56 +223,73 @@ def graficos(df_filtrado, df_filtrado_linha):
         
         
 
+    
     with aba4:
-        # Inicializa os estados da sessão
-        if 'numero_processo' not in st.session_state:
-            st.session_state.numero_processo = ''
-        if 'consultou' not in st.session_state:
-            st.session_state.consultou = False
-
-        # Função de callback para o botão "Nova consulta"
-        def reset_state():
-            st.session_state.numero_processo = ''
-            st.session_state.consultou = False
-
-        # A lógica para exibir os resultados e o botão de Nova Consulta.
-        if st.session_state.consultou:
-            # Exibe o botão de Nova Consulta
-            st.button("Nova consulta", on_click=reset_state)
-
-            # Lógica para exibir os resultados
-            num = st.session_state.numero_processo
-
-            if num.strip() == "":
-                st.warning("Digite o indice do imovel (Index)")
-            elif num.isdigit():
-                num = int(num)
-                df_numero_processo = df_filtrado[df_filtrado['Index'] == num]
-
-                if not df_numero_processo.empty:
-                    mainDataframe(df_numero_processo)
-                else:
-                    st.warning("Nenhum imóvel  encontrado com esse índice.")
-            else:
-                st.error("Digite apenas números inteiros para o processo.")
-
-        # Se a consulta ainda não foi feita ou foi resetada, exibe o formulário.
-        else:
+        st.title("🔍 Pesquisa")
+        st.subheader("Pesquise e baixe os relatórios por indice, logradouro ou bairro")
+        opcao = st.radio(
+        "Escolha o relatório por ",
+        options=["Indice", "Logradouro", "Bairro"],
+        captions=["Consulta por índice", "Consulta por endereço", "Consulta por bairro"],
+        horizontal=True
+        )
+        
+        if opcao == "Indice":
             with st.form(key='form_consulta'):
-                numero_processo_input = st.text_input(
-                    "Informe o identificador do imóvel (Index)", 
-                    value=st.session_state.numero_processo
-                )
+                entrada = st.text_input("🆔 Informe o índice do imóvel")
                 submit = st.form_submit_button("Consultar")
 
                 if submit:
-                    st.session_state.numero_processo = numero_processo_input.strip()
-                    st.session_state.consultou = True
-                    st.rerun() 
-            
+                    if entrada.strip() == "":
+                        st.warning("Digite o índice do imóvel.")
+                    elif entrada.isdigit():
+                        valor = int(entrada)
+                        df_resultado = df_filtrado[df_filtrado['Index'] == valor]
+                        colunas_para_remover = ["Ano", "Mes", "AnoMes", "Ano_Construcao"]
+                        df_resultado.drop(columns=colunas_para_remover, errors='ignore', inplace=True)
+
+                        df_resultado["Data_Transacao"] = pd.to_datetime(df_resultado["Data_Transacao"], errors="coerce", dayfirst=True)
+                        df_resultado["Data_Transacao"] = df_resultado["Data_Transacao"].dt.strftime("%d/%m/%Y")  # usar df_resultado
+                        if not df_resultado.empty:
+                            st.dataframe(df_resultado, use_container_width=True)
+                        else:
+                            st.warning("Nenhum imóvel encontrado com esse índice.")
+                    else:
+                        st.error("Digite apenas números inteiros para o índice.")
+
+        elif opcao == "Logradouro":
+            ruas = df_filtrado["Logradouro"].dropna().sort_values().unique()
+            ruas = [""] + list(ruas)
+            rua = st.selectbox("🏠 Infomre o logradouro do imóvel", ruas, key="filtro_rua")
+
+            if rua:  # só filtra se o usuário escolheu algum valor
+                df_resultado = df_filtrado[df_filtrado["Logradouro"] == rua].copy()  # usa copy para não alterar df_filtrado
+                colunas_para_remover = ["Ano", "Mes", "AnoMes", "Ano_Construcao"]
+                df_resultado.drop(columns=colunas_para_remover, errors='ignore', inplace=True)
+
+                df_resultado["Data_Transacao"] = pd.to_datetime(df_resultado["Data_Transacao"], errors="coerce", dayfirst=True)
+                df_resultado["Data_Transacao"] = df_resultado["Data_Transacao"].dt.strftime("%d/%m/%Y")  # usar df_resultado
+
+                st.dataframe(df_resultado, use_container_width=True)
+
+        elif opcao == "Bairro":
+            bairros = df_filtrado["Bairro"].dropna().sort_values().unique()
+            bairros = [""] + list(bairros)
+            bairro = st.selectbox("📍 Informe o bairro do imóvel", bairros, key="filtro_bairro")
+
+            if bairro:
+                df_resultado = df_filtrado[df_filtrado["Bairro"] == bairro].copy()
+                colunas_para_remover = ["Ano", "Mes", "AnoMes", "Ano_Construcao"]
+                df_resultado.drop(columns=colunas_para_remover, errors='ignore', inplace=True)
+
+                df_resultado["Data_Transacao"] = pd.to_datetime(df_resultado["Data_Transacao"], errors="coerce", dayfirst=True)
+                df_resultado["Data_Transacao"] = df_resultado["Data_Transacao"].dt.strftime("%d/%m/%Y")
+
+                st.dataframe(df_resultado, use_container_width=True)
+
     with aba5:
-        #placeholder_subheader = st.empty()
-        #placeholder_dataframe = st.empty()
+        st.title("📉 Estime o valor preditivo  usando regressão linear")
+        st.subheader("Visualize o valor preditivo dos bens imoveis informando o tamanho da área construídos e filtre as opções ")
         escolha = st.radio(
                     "Escolha o Box Plot com ou sem Outliers",
                     options=["Com Outliers", "Sem Outliers"],   # obrigatório
@@ -439,7 +462,7 @@ def graficos(df_filtrado, df_filtrado_linha):
         # Carregar modelo treinado
         #modelo = joblib.load("modelo_itbi.pkl")
         st.title("🏠 Predição de Valor de Imóvel - ITBI")
-        st.subheader("Forneça abaixo os parametros para o modelo preditivo")
+        st.subheader("Forneça abaixo os parametros  para o cálculo do valor preditivo usando o método RandomForestRegression")
         st.write("⚠️Dados de melhor qualidade geram predições mais precisas !!!")
         col60, col61, col62 = st.columns([1,1,1])
 
@@ -447,15 +470,36 @@ def graficos(df_filtrado, df_filtrado_linha):
         with col60:
             area_terreno = st.number_input("📐 Área do Terreno (m²)", min_value=0, step=1, key="area_terreno")
             area_construida = st.number_input("🏗️ Área Construída (m²)", min_value=0, step=1, key="area_construida")
-            bairro = st.selectbox("📍 Bairro", df_filtrado["Bairro"].sort_values().unique(), key="bairro")
-            regiao = df_filtrado.loc[df_filtrado["Bairro"] == bairro, "Região"].iloc[0]
+            #bairro = st.selectbox("📍 Bairro", df_filtrado["Bairro"].sort_values().unique(), key="bairro")
+            bairro = st.selectbox(
+                "📍 Bairro", 
+                [""] + list(df_filtrado["Bairro"].sort_values().unique()),  # valor inicial em branco
+                key="bairro"
+            )
+            # Inciando o bairro sem valor, temos que retornar None para zona
+            if not bairro:  # usa a mesma variável do selectbox
+                regiao = None
+            else:
+                regiao = df_filtrado.loc[df_filtrado["Bairro"] == bairro, "Região"].iloc[0]
             #st.info(f"Zona {regiao}")
 
         # Coluna 2: características do imóvel
         with col61:
-            padrao = st.selectbox("✨ Padrão de Acabamento", df_filtrado["Padrao_Acabamento"].sort_values().unique(), key="padrao")
-            ocupacao = st.selectbox("🏢 Tipo de Ocupação", df_filtrado["Tipo_Ocupacao"].sort_values().unique(), key="ocupacao")
-            construcao = st.selectbox("🏠 Tipo de Construção", df_filtrado["Tipo_Construcao"].sort_values().unique(), key="construcao")
+            padrao = st.selectbox(
+                "✨ Padrão de Acabamento", 
+                [""] + list(df_filtrado["Padrao_Acabamento"].sort_values().unique()),  # valor inicial em branco
+                key="padrao"
+            )
+            ocupacao = st.selectbox(
+                "🏢 Tipo de Ocupação", 
+                [""] + list(df_filtrado["Tipo_Ocupacao"].sort_values().unique()),  # valor inicial em branco
+                key="ocupacao"
+            )
+            construcao = st.selectbox(
+                "🏠 Tipo de Construção", 
+                [""] + list(df_filtrado["Tipo_Construcao"].sort_values().unique()),  # valor inicial em branco
+                key="construcao"
+            )
 
         # Coluna 3: botão e resultado
         with col62:
@@ -486,10 +530,10 @@ def graficos(df_filtrado, df_filtrado_linha):
         
         divisor()
 
-        col63, col64 =  st.columns([1,3])
+        col63, col64 =  st.columns([1.5,3])
 
         with col63:
-    # Caminhos das imagens
+        # Caminhos das imagens
             imagens = {
                 "Casa": ("Casa.jpg", "Casa"),
                 "Mocambo": ("Mocambo.jpg", "Casa"),
@@ -504,9 +548,10 @@ def graficos(df_filtrado, df_filtrado_linha):
                 "Hotel": ("hotel.jpg", "Hotel"),
                 "Apartamento <= 4 Pavimentos": ("Apartamento.jpg", "Apartamento"),
                 "Apartamento > 4 Pavimentos": ("Apartamento.jpg", "Apartamento"),
-                "Edificação Especial": ("Apartamento.jpg", "Apartamento"),
+                "Edificação Especial": ("EdificacaoEspecial.jpg", "Edificação Especial"),
                 "Loja <= 4 Pavimentos": ("Loja.jpg", "Loja"),
                 "Loja > 4 Pavimentos": ("Loja.jpg", "Loja"),
+
             }
 
             # Verifica se o tipo de construção existe no dicionário
@@ -514,7 +559,10 @@ def graficos(df_filtrado, df_filtrado_linha):
                 img_file, legenda = imagens[construcao]
                 img_path = os.path.join(os.path.dirname(__file__), '..', 'images', img_file)
                 st.image(img_path, caption=legenda)
-
+            else:
+                #base_path = os.path.dirname(__file__)
+                img_path2 = os.path.join(os.path.dirname(__file__), '..', 'images', 'fotorecife.jpeg')
+                st.image(img_path2, caption="Cidade do Recife")
         with col64:         
             st.markdown(
                 """
