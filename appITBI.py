@@ -75,7 +75,7 @@ def titulo_pagina():
     col1, col2 = st.columns([3, 1])
     with col1:
         st.markdown(
-            "<h1>ITBI - Imposto sobre Tramissão de Bens Imóvies - Recife</h1>"
+            "<h1>ITBI - Imposto sobre Transmissão de Bens Imóvies - Recife</h1>"
             "<p>Fonte: Dados abertos da Prefeitura do Recife</p>"
             f"<p>Perído: {primeira_data} a {ultima_data}</p>",
             unsafe_allow_html=True
