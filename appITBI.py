@@ -181,7 +181,7 @@ def criacao_navegacao_e_filtros():
         sobre.mainSobre(totalLinhas)
     elif selected == "Dashboards":
         df_filtrado_linha['Ano'] = df_filtrado_linha['Ano'].astype(str)
-        dashboards.mainGraficos(df_filtrado, df_filtrado_linha)
+        dashboards.mainGraficos(df_filtrado, df_filtrado_linha,df)
     else:
         dataframe.mainDataframe(df_filtrado)
 

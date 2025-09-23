@@ -10,18 +10,18 @@ modelo = joblib.load("modelo_itbi.pkl")
 
 
 
-from utils.totalizadores import calculo_total_transmisao, calculo_media , calculo_mediana, calculo_variancia, calculo_variancia_populacional, calculo_desvio, calculo_maior_valor, calculo_menor_valor, calculo_amplitude, formatar_milhar, formatar_moeda_br, calcular_correlacao, calculo_maior_area, calculo_menor_area, calculo_e_exibicao_formula_reta, calculo_valor_estimado_formula_reta, formatar_equacao_reta, calculo_mediana_area
+from utils.totalizadores import calculo_total_transmisao, calculo_media , calculo_mediana, calculo_variancia, calculo_variancia_populacional, calculo_desvio, calculo_maior_valor, calculo_menor_valor, calculo_amplitude, formatar_milhar, formatar_moeda_br, calcular_correlacao, calculo_maior_area, calculo_menor_area, calculo_e_exibicao_formula_reta, calculo_valor_estimado_formula_reta,  calculo_mediana_area
 from utils.graficos import grafico_total_licenciamentos_linha, grafico_barras, grafico_tree_map, grafico_rosca, grafico_media_mediana_desvio, grafico_box_plot, grafico_correlacao_area_valor, grafico_mediana, grafico_colunas, grafico_box_plot_sem_outleirs
 from utils.marcadores import divisor
 from utils.dataframe import mainDataframe
 
-def graficos(df_filtrado, df_filtrado_linha):
+def graficos(df_filtrado, df_filtrado_linha, df):
     
     # Calculo das medidas de tendencia central
     media = calculo_media(df_filtrado)
     mediana = calculo_mediana(df_filtrado)
-    variancia = calculo_variancia(df_filtrado)
-    variancia_populacional = calculo_variancia_populacional(df_filtrado)
+    #variancia = calculo_variancia(df_filtrado)
+    #variancia_populacional = calculo_variancia_populacional(df_filtrado)
     desvio = calculo_desvio(df_filtrado)
     
     maior_valor = calculo_maior_valor(df_filtrado)
@@ -72,7 +72,6 @@ def graficos(df_filtrado, df_filtrado_linha):
         # Mostrando a distruibuição do total de transmissões por Região e Bairros
         col14, col15 = st.columns([2,2], vertical_alignment='center', gap='small')
         with col14:
-            
             st.plotly_chart(fig1, use_container_width=True, key="grafico_barras_bairro")
         with col15:
             st.plotly_chart(fig6, use_container_width=True, key="grafico_tree_regiao")
@@ -225,18 +224,49 @@ def graficos(df_filtrado, df_filtrado_linha):
 
     
     with aba4:
+
+        # Diminuir o tamanho do df para apresentacao
+        def colunas_remover_df(df_resultado):
+            colunas_para_remover = ["Ano", "Mes", "AnoMes", "Ano_Construcao"]
+            df_resultado.drop(columns=colunas_para_remover, errors='ignore', inplace=True)
+
+            df_resultado["Data_Transacao"] = pd.to_datetime(
+            df_resultado["Data_Transacao"], errors="coerce", dayfirst=True
+                        ).dt.strftime("%d/%m/%Y")
+            return df_resultado
+
+        # Título da página
         st.title("🔍 Pesquisa")
-        st.subheader("Pesquise e baixe os relatórios por indice, logradouro ou bairro")
+        st.subheader("Pesquise e baixe os relatórios por índice, logradouro ou bairro")
+
+        # Inicializar session_state para controlar reset
+        if "reset" not in st.session_state:
+            st.session_state.reset = False
+      
+        # Criando as opções para o usuário
         opcao = st.radio(
-        "Escolha o relatório por ",
-        options=["Indice", "Logradouro", "Bairro"],
-        captions=["Consulta por índice", "Consulta por endereço", "Consulta por bairro"],
-        horizontal=True
+            "Escolha o relatório por ",
+            options=["Indice", "Logradouro", "Bairro"],
+            captions=["Consulta por índice", "Consulta por endereço", "Consulta por bairro"],
+            horizontal=True,
+            key="filtro_opcao"
         )
-        
+
+        # Botão de nova consulta - Precisa de chave para não confudir com botao de valores preditivos
+        if st.button("🔄 Nova Consulta", key="nova_consulta_pesquisa"): 
+            # Zera apenas os filtros dessa aba - as entradas ficam limpas
+            if "input_indice" in st.session_state:
+                st.session_state["input_indice"] = ""
+            if "filtro_rua" in st.session_state:
+                st.session_state["filtro_rua"] = ""
+            if "filtro_bairro" in st.session_state:
+                st.session_state["filtro_bairro"] = ""
+            st.rerun() # Funciona como refresh de página
+            
+        # Opção de consulta por indexador
         if opcao == "Indice":
             with st.form(key='form_consulta'):
-                entrada = st.text_input("🆔 Informe o índice do imóvel")
+                entrada = st.text_input("🆔 Informe o índice do imóvel", key="input_indice")
                 submit = st.form_submit_button("Consultar")
 
                 if submit:
@@ -244,35 +274,28 @@ def graficos(df_filtrado, df_filtrado_linha):
                         st.warning("Digite o índice do imóvel.")
                     elif entrada.isdigit():
                         valor = int(entrada)
-                        df_resultado = df_filtrado[df_filtrado['Index'] == valor]
-                        colunas_para_remover = ["Ano", "Mes", "AnoMes", "Ano_Construcao"]
-                        df_resultado.drop(columns=colunas_para_remover, errors='ignore', inplace=True)
-
-                        df_resultado["Data_Transacao"] = pd.to_datetime(df_resultado["Data_Transacao"], errors="coerce", dayfirst=True)
-                        df_resultado["Data_Transacao"] = df_resultado["Data_Transacao"].dt.strftime("%d/%m/%Y")  # usar df_resultado
+                        df_resultado = df_filtrado[df_filtrado['Index'] == valor].copy()
+                        df_resultado = colunas_remover_df(df_resultado)
                         if not df_resultado.empty:
                             st.dataframe(df_resultado, use_container_width=True)
                         else:
                             st.warning("Nenhum imóvel encontrado com esse índice.")
                     else:
                         st.error("Digite apenas números inteiros para o índice.")
-
+                   
+        # Opcao de consultar por logradouro (rua)
         elif opcao == "Logradouro":
             ruas = df_filtrado["Logradouro"].dropna().sort_values().unique()
             ruas = [""] + list(ruas)
-            rua = st.selectbox("🏠 Infomre o logradouro do imóvel", ruas, key="filtro_rua")
+            rua = st.selectbox("🏠 Informe o logradouro do imóvel", ruas, key="filtro_rua")
 
-            if rua:  # só filtra se o usuário escolheu algum valor
-                df_resultado = df_filtrado[df_filtrado["Logradouro"] == rua].copy()  # usa copy para não alterar df_filtrado
-                colunas_para_remover = ["Ano", "Mes", "AnoMes", "Ano_Construcao"]
-                df_resultado.drop(columns=colunas_para_remover, errors='ignore', inplace=True)
-
-                df_resultado["Data_Transacao"] = pd.to_datetime(df_resultado["Data_Transacao"], errors="coerce", dayfirst=True)
-                df_resultado["Data_Transacao"] = df_resultado["Data_Transacao"].dt.strftime("%d/%m/%Y")  # usar df_resultado
-
+            if rua:
+                df_resultado = df_filtrado[df_filtrado["Logradouro"] == rua].copy()
+                df_resultado = colunas_remover_df(df_resultado)
                 st.dataframe(df_resultado, use_container_width=True)
-                totalLinhas = df_resultado.shape[0]
-                st.metric("📄 Total de Imóveis", value=totalLinhas, border=False)
+                st.metric("📄 Total de Imóveis", value=df_resultado.shape[0], border=False)
+
+        # Opcao por bairro
         elif opcao == "Bairro":
             bairros = df_filtrado["Bairro"].dropna().sort_values().unique()
             bairros = [""] + list(bairros)
@@ -280,18 +303,16 @@ def graficos(df_filtrado, df_filtrado_linha):
 
             if bairro:
                 df_resultado = df_filtrado[df_filtrado["Bairro"] == bairro].copy()
-                colunas_para_remover = ["Ano", "Mes", "AnoMes", "Ano_Construcao"]
-                df_resultado.drop(columns=colunas_para_remover, errors='ignore', inplace=True)
-
-                df_resultado["Data_Transacao"] = pd.to_datetime(df_resultado["Data_Transacao"], errors="coerce", dayfirst=True)
-                df_resultado["Data_Transacao"] = df_resultado["Data_Transacao"].dt.strftime("%d/%m/%Y")
-
+                df_resultado = colunas_remover_df(df_resultado)
                 st.dataframe(df_resultado, use_container_width=True)
-                totalLinhas = df_resultado.shape[0]
-                st.metric("📄 Total de Imóveis", value=totalLinhas, border=False)
+                st.metric("📄 Total de Imóveis", value=df_resultado.shape[0], border=False)
+
     with aba5:
+        # Titulo da página
         st.title("📉 Estime o valor preditivo  usando regressão linear")
         st.subheader("Visualize o valor preditivo dos bens imoveis informando o tamanho da área construídos e filtre as opções ")
+
+        #Escolha da opcao com ou sem outliers
         escolha = st.radio(
                     "Escolha o Box Plot com ou sem Outliers",
                     options=["Com Outliers", "Sem Outliers"],   # obrigatório
@@ -300,8 +321,8 @@ def graficos(df_filtrado, df_filtrado_linha):
                 )
         
         total_com_outliers = df_filtrado.shape[0]
+
         if escolha == "Com Outliers":
-            
             if df_filtrado.shape[0] >= 2:
                 col40, col41, col42, col43  =  st.columns(4)
                 with col40:
@@ -461,45 +482,69 @@ def graficos(df_filtrado, df_filtrado_linha):
                  
 
     with aba6:
-        # Carregar modelo treinado
-        #modelo = joblib.load("modelo_itbi.pkl")
-        st.title("🏠 Predição de Valor de Imóvel - ITBI")
+        
+        # Título da página
+        st.title("🏠 Predição do Valor do Imóvel - ITBI")
         st.subheader("Forneça abaixo os parametros  para o cálculo do valor preditivo usando o método RandomForestRegression")
         st.write("⚠️Dados de melhor qualidade geram predições mais precisas !!!")
+
+
+        # Botão de nova consulta (resetar antes dos widgets)
+        if st.button("🔄 Nova Consulta", key="nova_consulta_predicao"):
+            # Zera todos os campos da aba de predição
+            st.session_state["area_terreno"] = 0
+            st.session_state["area_construida"] = 0
+            st.session_state["bairro"] = ""
+            st.session_state["padrao"] = ""
+            st.session_state["ocupacao"] = ""
+            st.session_state["construcao"] = ""
+
+            # Recarrega a página para refletir os valores resetados - semelhante ao refresh
+            st.rerun()
+
+
         col60, col61, col62 = st.columns([1,1,1])
 
-        # Coluna 1: dados do imóvel
+        # Coluna 1: dados do imóvel - usar df para nao ser influenciado pelo df_filtrado usado nos filtros gerais
         with col60:
             area_terreno = st.number_input("📐 Área do Terreno (m²)", min_value=0, step=1, key="area_terreno")
             area_construida = st.number_input("🏗️ Área Construída (m²)", min_value=0, step=1, key="area_construida")
-            #bairro = st.selectbox("📍 Bairro", df_filtrado["Bairro"].sort_values().unique(), key="bairro")
+            
+            col70, col71 = st.columns([2, 1])
+
+        with col70:
             bairro = st.selectbox(
                 "📍 Bairro", 
-                [""] + list(df_filtrado["Bairro"].sort_values().unique()),  # valor inicial em branco
+                [""] + list(df["Bairro"].sort_values().unique()),
                 key="bairro"
             )
-            # Inciando o bairro sem valor, temos que retornar None para zona
-            if not bairro:  # usa a mesma variável do selectbox
-                regiao = None
+
+        with col71:
+            if not bairro:
+                regiao = "—"
             else:
-                regiao = df_filtrado.loc[df_filtrado["Bairro"] == bairro, "Região"].iloc[0]
-            #st.info(f"Zona {regiao}")
+                regiao = df.loc[df["Bairro"] == bairro, "Região"].iloc[0]
+
+            st.markdown(
+                f"<div style='margin-top:32px; font-weight:bold; color:#2c3e50;'>Zona {regiao}</div>",
+                unsafe_allow_html=True
+            )
 
         # Coluna 2: características do imóvel
         with col61:
             padrao = st.selectbox(
                 "✨ Padrão de Acabamento", 
-                [""] + list(df_filtrado["Padrao_Acabamento"].sort_values().unique()),  # valor inicial em branco
+                [""] + list(df["Padrao_Acabamento"].sort_values().unique()),  # valor inicial em branco
                 key="padrao"
             )
             ocupacao = st.selectbox(
                 "🏢 Tipo de Ocupação", 
-                [""] + list(df_filtrado["Tipo_Ocupacao"].sort_values().unique()),  # valor inicial em branco
+                [""] + list(df["Tipo_Ocupacao"].sort_values().unique()),  # valor inicial em branco
                 key="ocupacao"
             )
             construcao = st.selectbox(
                 "🏠 Tipo de Construção", 
-                [""] + list(df_filtrado["Tipo_Construcao"].sort_values().unique()),  # valor inicial em branco
+                [""] + list(df["Tipo_Construcao"].sort_values().unique()),  # valor inicial em branco
                 key="construcao"
             )
 
@@ -556,7 +601,7 @@ def graficos(df_filtrado, df_filtrado_linha):
 
             }
 
-            # Verifica se o tipo de construção existe no dicionário
+            # Verifica se a variável  tipo de construção existe no dicionário
             if construcao in imagens:
                 img_file, legenda = imagens[construcao]
                 img_path = os.path.join(os.path.dirname(__file__), '..', 'images', img_file)
@@ -578,7 +623,8 @@ def graficos(df_filtrado, df_filtrado_linha):
                     """,
                 unsafe_allow_html=True
                 )
-def mainGraficos(df_filtrado, df_filtrado_linha):
+def mainGraficos(df_filtrado, df_filtrado_linha, df):
     divisor()
-    graficos(df_filtrado, df_filtrado_linha) # Passe o df_filtrado e o df_filtrado_linha para a função graficos
+    # df_filtrado e o df_filtrado_linha para a função graficos e df para valores preditivos para evitar ação de filtros nas variáveis
+    graficos(df_filtrado, df_filtrado_linha, df) 
     divisor()
