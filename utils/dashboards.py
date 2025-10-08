@@ -310,7 +310,7 @@ def graficos(df_filtrado, df_filtrado_linha, df):
     with aba5:
         # Titulo da página
         st.title("📉 Estime o valor preditivo  usando regressão linear")
-        st.subheader("Preencha os campos abaixo para o cálculo do Valor Preditivo. Não use os filtros!!!")
+        st.subheader("Informe abaixo a área do imóvel para o cálculo do Valor Preditivo")
 
         #Escolha da opcao com ou sem outliers
         escolha = st.radio(
@@ -485,8 +485,8 @@ def graficos(df_filtrado, df_filtrado_linha, df):
         
         # Título da página
         st.title("🏠 Predição do Valor do Imóvel - ITBI")
-        st.subheader("Forneça abaixo os parametros  para o cálculo do valor preditivo usando o método RandomForestRegression")
-        st.write("⚠️Dados de melhor qualidade geram predições mais precisas !!!")
+        st.subheader("Forneça abaixo os parâmetros  para o cálculo do valor preditivo. ")
+        st.write("⚠️Não usar os filtros  !!!")
 
 
         # Botão de nova consulta (resetar antes dos widgets)
