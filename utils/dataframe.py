@@ -1,6 +1,6 @@
 import streamlit as st
 from utils.marcadores import divisor
-#from utils.totalizadores import calular_a_quantidade_de_colunas
+from utils.totalizadores import formatar_milhar
 import pandas as pd
 
 def dataframe(df_filtrado):
@@ -69,7 +69,7 @@ def dataframe(df_filtrado):
                 
             )
         with col2:
-            totalLinhas = filtro_dados.shape[0]
+            totalLinhas = formatar_milhar(filtro_dados.shape[0])
             st.metric("📄 Total de Linhas", value=totalLinhas, border=True)
 
         with col3:
