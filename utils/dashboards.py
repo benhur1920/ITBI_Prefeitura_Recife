@@ -237,7 +237,7 @@ def graficos(df_filtrado, df_filtrado_linha, df):
 
         # Título da página
         st.title("🔍 Pesquisa")
-        st.subheader("Pesquise e baixe os relatórios por índice, logradouro ou bairro")
+        st.subheader("Pesquise  os relatórios por índice, logradouro ou bairro")
 
         # Inicializar session_state para controlar reset
         if "reset" not in st.session_state:
@@ -310,7 +310,7 @@ def graficos(df_filtrado, df_filtrado_linha, df):
     with aba5:
         # Titulo da página
         st.title("📉 Estime o valor preditivo  usando regressão linear")
-        st.subheader("Visualize o valor preditivo dos bens imoveis informando o tamanho da área construídos e filtre as opções ")
+        st.subheader("Preencha os campos abaixo para o cálculo do Valor Preditivo. Não use os filtros!!!")
 
         #Escolha da opcao com ou sem outliers
         escolha = st.radio(

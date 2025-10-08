@@ -75,9 +75,9 @@ def titulo_pagina():
     col1, col2 = st.columns([3, 1])
     with col1:
         st.markdown(
-            "<h1>ITBI - Imposto sobre Transmissão de Bens Imóvies - Recife</h1>"
+            "<h1>PredictImóvel Recife</h1>"
             "<p>Fonte: Dados abertos da Prefeitura do Recife</p>"
-            f"<p>Perído: {primeira_data} a {ultima_data}</p>",
+            f"<p>Perído: {primeira_data} a {ultima_data}</p>",            
             unsafe_allow_html=True
         )
     with col2:
@@ -92,6 +92,7 @@ def titulo_pagina():
             """, unsafe_allow_html=True
         )
         st.write(f"📅 Data: {hoje.strftime('%d/%m/%Y')}")
+        #st.write("Desenvolvido por Ben-Hur Queiroz Beltrão")
 
 # ----------------------------
 # Funções de filtro
@@ -152,8 +153,8 @@ def criacao_navegacao_e_filtros():
 
     with st.sidebar:
         selected = option_menu(
-            menu_title="Conheça",
-            options=["Sobre", "Dashboards", "Dataframe"],
+            menu_title="Navegue nas páginas",
+            options=["Sobre", "Painéis", "Dataframe"],
             icons=["info-circle", "bar-chart", "table"],
             menu_icon="cast",
             default_index=0
@@ -179,7 +180,7 @@ def criacao_navegacao_e_filtros():
     # Conteúdo principal
     if selected == "Sobre":
         sobre.mainSobre(totalLinhas)
-    elif selected == "Dashboards":
+    elif selected == "Painéis":
         df_filtrado_linha['Ano'] = df_filtrado_linha['Ano'].astype(str)
         dashboards.mainGraficos(df_filtrado, df_filtrado_linha,df)
     else:
