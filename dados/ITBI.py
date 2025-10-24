@@ -165,7 +165,7 @@ def Salvar_o_DataFrame_em_arquivo_CSV_e_Json(df):
     mensagem("Salvando os arquivos !!! Até o próximos mes !!!!!")
     #df.to_csv(r'C:\Users\Ben-Hur\OneDrive\Desktop\Projeto Prefeitura\Arquivos Fontes\saida\ITBI.csv', sep=';',encoding='utf-8-sig', index=False)
     df.to_parquet('ITBI.parquet', engine='pyarrow', index=False)
-    #df.to_csv(r"dados/ITBI.csv", sep=";", encoding="utf-8-sig", index=False)
+    df.to_csv("ITBI.csv", sep=";", encoding="utf-8-sig", index=False)
     # df.to_json('ITBI.json', orient='records', force_ascii=False, indent=4)
 
 def mensagem(mensagem):

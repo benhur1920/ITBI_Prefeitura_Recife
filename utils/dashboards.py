@@ -355,7 +355,7 @@ def graficos(df_filtrado, df_filtrado_linha, df):
                                 )  
                 with st.container():
                         st.markdown(
-                            "<h3 style='color:black'>Informe a área construída do imóvel para estimativa de valor (m²)</h3>",
+                            "<h3>Informe a área construída do imóvel para estimativa de valor (m²)</h3>",
                             unsafe_allow_html=True
                         )
                         # Input do usuário
