@@ -95,6 +95,10 @@ def grafico_barras(df, nome_coluna, titulo_grafico, top_n, tipo_calculo, coluna_
     # configuração comum
     fig1.update_traces(textposition="outside")
     fig1.update_coloraxes(showscale=False)
+
+    # Resolve a distancia entre o valor e o tamanho do grafio
+    fig1.update_yaxes(range=[0, df_bairro["TOTAL"].max() * 1.15])
+
     return fig1
     
 # Grafico tree map

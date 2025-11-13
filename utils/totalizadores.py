@@ -5,8 +5,9 @@ import streamlit as st
 # Calculo dos totalizadores
 def calculo_total_transmisao(df_filtrado):
     total_df = df_filtrado['Data_Transacao'].count()
+    total = len(df_filtrado)  # ou .notna().sum() dependendo do que quer
     #total_df = formatar_milhar(total_df)
-    return total_df
+    return total
 
 
 # Calculando os indicadores gerais para o ano de 2025

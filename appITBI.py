@@ -39,7 +39,7 @@ for filtro in filtros_iniciais:
 # ----------------------------
 # Caminho do arquivo
 # ----------------------------
-CAMINHO_ARQUIVO_ORIGINAL = "dados/ITBI.parquet"
+CAMINHO_ARQUIVO_ORIGINAL = r"C:\Users\Ben-Hur\Desktop\Emprel\Streamlit_ITBI\dados\ITBI.parquet"
 
 # ----------------------------
 # Data atual
