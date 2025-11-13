@@ -59,6 +59,7 @@ def carregar_arquivo_parquet():
 
 df = carregar_arquivo_parquet()
 
+
 # ----------------------------
 # Cópia do DataFrame original
 # ----------------------------

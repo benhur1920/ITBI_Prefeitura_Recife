@@ -29,18 +29,7 @@ def entrada_de_dados_de_2021_a_2025():
         mensagem("Nenhum arquivo pôde ser lido.")
         return pd.DataFrame()  
     
-    # Padroniza nomes de colunas essenciais
-    df.columns = df.columns.str.strip().str.lower()
-
-    # Renomeia colunas importantes se existirem com nomes diferentes
-    mapeamento_colunas = {
-        'data_transacao': 'data_transacao',
-        'data_transação': 'data_transacao',
-        'data de transacao': 'data_transacao',
-        'valor_avaliacao': 'valor_avaliacao',
-        'valor de avaliacao': 'valor_avaliacao',
-    }
-    df.rename(columns=mapeamento_colunas, inplace=True)
+    
 
 def excluir_colunas_sem_interesse(df):
     colunas_para_remover = ['cidade', 'uf', 'sfh', 'cod_logradouro', 'fracao_ideal', 'cod_logradouro', 'latitude', 'longitude', 'Distrito' ]
@@ -205,6 +194,7 @@ def main():
     df = criar_coluna_mes(df)
 
     df = converter_coluna_valor_avaliacao(df)
+    print(df.columns)
     Salvar_o_DataFrame_em_arquivo_CSV_e_Json(df)
 
 if __name__ == '__main__':
