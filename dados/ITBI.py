@@ -28,6 +28,19 @@ def entrada_de_dados_de_2021_a_2025():
     else:
         mensagem("Nenhum arquivo pôde ser lido.")
         return pd.DataFrame()  
+    
+    # Padroniza nomes de colunas essenciais
+    df.columns = df.columns.str.strip().str.lower()
+
+    # Renomeia colunas importantes se existirem com nomes diferentes
+    mapeamento_colunas = {
+        'data_transacao': 'data_transacao',
+        'data_transação': 'data_transacao',
+        'data de transacao': 'data_transacao',
+        'valor_avaliacao': 'valor_avaliacao',
+        'valor de avaliacao': 'valor_avaliacao',
+    }
+    df.rename(columns=mapeamento_colunas, inplace=True)
 
 def excluir_colunas_sem_interesse(df):
     colunas_para_remover = ['cidade', 'uf', 'sfh', 'cod_logradouro', 'fracao_ideal', 'cod_logradouro', 'latitude', 'longitude', 'Distrito' ]
