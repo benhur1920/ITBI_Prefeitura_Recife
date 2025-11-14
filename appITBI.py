@@ -39,7 +39,8 @@ for filtro in filtros_iniciais:
 # ----------------------------
 # Caminho do arquivo
 # ----------------------------
-CAMINHO_ARQUIVO_ORIGINAL = "dados\ITBI.parquet"
+BASE = os.path.dirname(__file__)
+arquivo = os.path.join(BASE, "dados", "ITBI.parquet")
 
 # ----------------------------
 # Data atual
@@ -52,13 +53,19 @@ hoje = date.today()
 @st.cache_data
 def carregar_arquivo_parquet():
     try:
-        return pd.read_parquet(CAMINHO_ARQUIVO_ORIGINAL, engine='pyarrow')
+        return pd.read_parquet(arquivo, engine='pyarrow')
     except Exception as e:
         st.error(f"Erro ao carregar arquivo: {e}")
-        return pd.DataFrame()  # retorna dataframe vazio para evitar crash
+        return pd.DataFrame()
 
 df = carregar_arquivo_parquet()
+if df.empty:
+    st.error("O DataFrame está vazio. Verifique o arquivo.")
+    st.stop()
 
+if 'Ano' not in df.columns:
+    st.error("A coluna 'Ano' não existe no DataFrame. Verifique se o arquivo foi gerado corretamente.")
+    st.stop()
 
 # ----------------------------
 # Cópia do DataFrame original
