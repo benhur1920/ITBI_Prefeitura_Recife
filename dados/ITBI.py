@@ -160,7 +160,7 @@ def criar_coluna_mes(df):
     return df
 
 def converter_coluna_valor_avaliacao(df):
-    df['Valor_Avaliacao'] = pd.to_numeric(df['Valor_Avaliacao'], errors='coerce').fillna(0).astype(int)
+    df['Valor_Avaliacao'] = pd.to_numeric(df['Valor_Avaliacao'], errors='coerce').fillna(0).astype(float)
     return df
 
 def Salvar_o_DataFrame_em_arquivo_CSV_e_Json(df):
@@ -179,6 +179,7 @@ def main():
     df = excluir_colunas_sem_interesse(df)
     df = criar_coluna_identificador(df)
     df = aplicar_title_nomes_colunas(df)
+    
     # Iniciando tratamento da coluna Bairro
     df = transformar_para_caixa_baixa(df)
     df = remover_espaços_em_branco_extras(df)
@@ -194,6 +195,7 @@ def main():
     df = criar_coluna_mes(df)
 
     df = converter_coluna_valor_avaliacao(df)
+    print(df.info())
     print(df.columns)
     Salvar_o_DataFrame_em_arquivo_CSV_e_Json(df)
 
