@@ -5,11 +5,12 @@ def entrada_de_dados_de_2021_a_2025():
     mensagem("Iniciando leitura dos arquivos no site e baixando os datasets")
     
     urls = {
-        2021: 'http://dados.recife.pe.gov.br/dataset/28e3e25e-a9a7-4a9f-90a8-bb02d09cbc18/resource/1db559c3-ffcb-451f-a7f2-84d1165256bd/download/itbi_2021.csv',
-        2022: 'http://dados.recife.pe.gov.br/dataset/28e3e25e-a9a7-4a9f-90a8-bb02d09cbc18/resource/1c22cb35-8ce8-42f0-b631-2c66ea1edaa3/download/itbi_2022.csv',
-        2023: 'http://dados.recife.pe.gov.br/dataset/28e3e25e-a9a7-4a9f-90a8-bb02d09cbc18/resource/a01e3b82-055b-4139-b495-e54ec5196f54/download/itbi_2023.csv',
-        2024: 'http://dados.recife.pe.gov.br/dataset/28e3e25e-a9a7-4a9f-90a8-bb02d09cbc18/resource/c3feb7bb-4a76-4ddf-becb-ea77f66c23d0/download/itbi_2024.csv',
-        2025: 'http://dados.recife.pe.gov.br/dataset/28e3e25e-a9a7-4a9f-90a8-bb02d09cbc18/resource/97bbfc62-efb2-493f-9631-09eb05f980d7/download/itbi_2025.csv'
+        2021: 'https://dados.recife.pe.gov.br/dataset/ae32808e-ab98-4fe4-bacf-a72b2ac14551/resource/f3a083a1-aa48-416d-b3aa-c022192219e6/download/itbi-2021-imposto-sobre-a-transmissao-de-bens-imoveis.csv',
+        2022: 'https://dados.recife.pe.gov.br/dataset/ae32808e-ab98-4fe4-bacf-a72b2ac14551/resource/5226cf6f-ed06-4956-b133-a0c788a5d494/download/itbi-2022-imposto-sobre-a-transmissao-de-bens-imoveis.csv',
+        2023: 'https://dados.recife.pe.gov.br/dataset/ae32808e-ab98-4fe4-bacf-a72b2ac14551/resource/47dfea23-81ec-455e-83a0-3e451e5b5ca6/download/itbi-2023-imposto-sobre-a-transmissao-de-bens-imoveis.csv',
+        2024: 'https://dados.recife.pe.gov.br/dataset/ae32808e-ab98-4fe4-bacf-a72b2ac14551/resource/756d9a7e-33aa-4fdd-a541-0f5dc97c7502/download/itbi-2024-imposto-sobre-a-transmissao-de-bens-imoveis.csv',
+        2025: 'https://dados.recife.pe.gov.br/dataset/ae32808e-ab98-4fe4-bacf-a72b2ac14551/resource/1d705d4a-f67a-4914-971f-01f9b1685d1b/download/itbi-2025-imposto-sobre-a-transmissao-de-bens-imoveis.csv',
+        2026: 'https://dados.recife.pe.gov.br/dataset/ae32808e-ab98-4fe4-bacf-a72b2ac14551/resource/fc95e204-a121-4b7a-94b2-e4420539c0d1/download/itbi_2026.csv'
     }
 
     dfs = []
