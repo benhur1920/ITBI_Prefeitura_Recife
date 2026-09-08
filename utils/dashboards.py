@@ -37,11 +37,11 @@ def graficos(df_filtrado, df_filtrado_linha, df):
     fig2 = grafico_tree_map(df_filtrado, 'Padrao_Acabamento', 'Total de transmissão de imóvel por padrão de acabamento')
     fig3 = grafico_barras(df_filtrado, 'Tipo_Imovel', 'Distribuição do ITBI por tipo de imóvel', None, "quantitativo" ) 
     fig4 = grafico_rosca(df_filtrado,'Tipo_Ocupacao', 'Total de transmissões por tipo de ocupação do imóvel')
-    fig5 = grafico_media_mediana_desvio(df_filtrado)
+    fig5 = grafico_media_mediana_desvio(df_filtrado_linha)
     fig6 = grafico_tree_map(df_filtrado, 'Região', 'Total de transmissões de imóveis por Região')
     fig7 = grafico_box_plot(df_filtrado)
     fig8 = grafico_correlacao_area_valor(df_filtrado)
-    fig9 = grafico_mediana(df_filtrado, 'Valor_Avaliacao', 'Mediana das avaliações de valor das transmissões' )
+    fig9 = grafico_mediana(df_filtrado_linha, 'Valor_Avaliacao', 'Mediana das avaliações de valor das transmissões' )
     fig10 = grafico_colunas(df_filtrado, 'Região', 'Valor_Avaliacao', 'Mediana do valor de transmissão por região', None, "mediana", "Blue")
     fig11 = grafico_colunas(df_filtrado, 'Bairro', 'Valor_Avaliacao', 'Mediana do valor de transmissão por Bairro -Top 10', 10, "mediana", "Blue")
     
